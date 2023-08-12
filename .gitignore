@@ -1,2 +1,2 @@
-# Speeds up saving notebooks in vscode a bit, avoids tracking temp files
 *.ipynb.*
+__pycache__/
