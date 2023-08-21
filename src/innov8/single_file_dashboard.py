@@ -12,7 +12,7 @@ from dash_bootstrap_templates import ThemeChangerAIO, template_from_url
 from plotly.subplots import make_subplots
 
 # import database connection object and the function for updating ohlc data
-from db_ops import add_new_ohlc, con, cur
+from innov8.db_ops import add_new_ohlc, con, cur
 
 ### Load main data into a pandas DataFrame
 main_query = """
@@ -988,5 +988,10 @@ app.layout = dbc.Container(
     style={"height": "100%", "width": "100%", "margin": 0, "overflow": "hidden"},
 )
 
-if __name__ == "__main__":
+
+def main():
     app.run(debug=True)
+
+
+if __name__ == "__main__":
+    main()
