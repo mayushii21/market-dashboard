@@ -3,6 +3,7 @@ import sqlite3
 import requests
 import yfinance as yf
 from bs4 import BeautifulSoup
+from tqdm import tqdm
 
 # Connect to database
 con = sqlite3.connect("stonks.db", check_same_thread=False)
@@ -101,7 +102,8 @@ if not cur.execute(
         con.commit()
 
     def insert_ticker_info():
-        for symbol in ticker_symbols:
+        print("Populating database with main ticker information...")
+        for symbol in tqdm(ticker_symbols):
             try:
                 with con:
                     info = tickers.tickers[symbol].info
@@ -174,18 +176,22 @@ if not cur.execute(
                         """,
                         info,
                     )
-                    print(f"Successfully inserted info for {symbol}")
+                    # print(f"Successfully inserted info for {symbol}")
             except Exception:
-                print(f"Failed to insert {symbol}")
+                # print(f"Failed to insert {symbol}")
+                pass
 
     def fill_ohlc():
+        print("Populating database with OHLC data...")
         # Per ticker OHLC data retrieval - helps avoid rate limiting
-        for symbol in cur.execute(
-            """
-            SELECT symbol
-            FROM ticker
-            """
-        ).fetchall():
+        for symbol in tqdm(
+            cur.execute(
+                """
+                SELECT symbol
+                FROM ticker
+                """
+            ).fetchall()
+        ):
             try:
                 # Retrieve OHLC data for symbol
                 ohlc_data = tickers.tickers[symbol[0]].history(
@@ -242,9 +248,10 @@ if not cur.execute(
                     """,
                         ohlc_data,
                     )
-                    print(f"Successfully inserted OHLC data for {symbol[0]}")
+                    # print(f"Successfully inserted OHLC data for {symbol[0]}")
             except Exception as e:
-                print(f"[{symbol[0]}] Exception: {e}")
+                # print(f"[{symbol[0]}] Exception: {e}")
+                pass
 
     ticker_symbols = scrape_symbols()
     # Create necessary tables
@@ -346,4 +353,5 @@ def add_new_ohlc(symbol):
 print("Successfully established DB connection")
 
 # con.commit()
+# con.close()
 # con.close()
