@@ -1,6 +1,5 @@
 import datetime
 
-import dash
 import dash_bootstrap_components as dbc
 import dash_trich_components as dtc
 import pandas as pd
@@ -13,6 +12,7 @@ from plotly.subplots import make_subplots
 
 # import database connection object and the function for updating ohlc data
 from innov8.db_ops import add_new_ohlc, con, cur
+from innov8.server import app
 
 ### Load main data into a pandas DataFrame
 main_query = """
@@ -57,15 +57,7 @@ def load_main_table():
 
 
 load_main_table()
-main_table.head()
-# Initiate dash app with default theme (visible for a split second before theme from ThemeChangerAIO takes over)
-default_theme = dbc.themes.CYBORG
-# css for styling dcc and html components with dbc themes
-dbc_css = (
-    "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates@V1.0.8/dbc.min.css"
-)
-app = dash.Dash(__name__, external_stylesheets=[default_theme, dbc_css])
-server = app.server
+
 change_query = """
 WITH growth AS (
     SELECT t.symbol,
