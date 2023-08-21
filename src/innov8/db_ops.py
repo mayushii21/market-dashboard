@@ -1,12 +1,18 @@
 import sqlite3
+from pathlib import Path
 
 import requests
 import yfinance as yf
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 
-# Connect to database
-con = sqlite3.connect("stonks.db", check_same_thread=False)
+# Get the absolute path of the directory containing the script
+script_directory = Path(__file__).resolve().parent
+# Construct the absolute path to the database file
+database_path = script_directory / "stonks.db"
+
+# Connect to the database using the absolute path
+con = sqlite3.connect(database_path, check_same_thread=False)
 cur = con.cursor()
 
 # Check if the database is populated by checking if the price table is present
