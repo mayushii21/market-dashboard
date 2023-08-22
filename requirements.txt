@@ -1,0 +1,12 @@
+# platform: linux-64
+requests
+beautifulsoup4
+lxml
+pandas
+yfinance
+ipykernel
+nbformat
+dash
+dash-bootstrap-components
+dash-bootstrap-templates
+dash-trich-components
