@@ -8,4 +8,3 @@ dbc_css = (
     "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates@V1.0.8/dbc.min.css"
 )
 app = Dash(__name__, external_stylesheets=[default_theme, dbc_css])
-server = app.server
