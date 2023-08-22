@@ -27,4 +27,4 @@ requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
 [project.scripts]
-innov8 = 'innov8.single_file_dashboard:main'
+innov8 = 'innov8.app:main'

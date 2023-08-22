@@ -1,3 +1,3 @@
-from innov8.single_file_dashboard import main
+from innov8.app import main
 
 main()
