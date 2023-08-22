@@ -1,11 +1,11 @@
 <!-- better use an svg -->
 <div align="center">
-    <img src="pixel_neko.png">
+    <img src="doc/pixel_neko.png">
 </div>
 
 -------
 
-# innov8finance: interactive market dashboard ![brought to you by bread cat](https://img.shields.io/badge/made_with_%F0%9F%8D%9E_by-(%E2%81%A0%5E%E2%81%A0.%E2%81%A0__%E2%81%A0.%E2%81%A0%5E%E2%81%A0)%E2%81%A0%EF%BE%89-966FD6?style=for-the-badge)
+# innov8finance: interactive market dashboard [![brought to you by bread cat](https://img.shields.io/badge/made_with_%F0%9F%8D%9E_by-(%E2%81%A0%5E%E2%81%A0.%E2%81%A0__%E2%81%A0.%E2%81%A0%5E%E2%81%A0)%E2%81%A0%EF%BE%89-966FD6?style=for-the-badge)](https://github.com/mayushii21)
 
 <div align="center">
 
@@ -18,7 +18,7 @@
 
 </div>
 
-**innov8finance** is a versatile market dashboard designed to meet the needs of traders, offering an innovative alternative to Tradingview with a plethora of aesthetically pleasing themes to choose from. It provides users with the convenience of accessing the platform online or hosting it locally on their machine. This allows traders to have uninterrupted access to historical tick data even when the grid is down, ensuring they can backtest their trading strategies anytime, anywhere. Experience the power of Innov8Finance for reliable and efficient trading analysis.
+**innov8finance** is a versatile market dashboard designed to meet the needs of traders, offering an innovative alternative to Tradingview with a plethora of aesthetically pleasing themes to choose from. It provides users with the convenience of accessing the platform online or hosting it locally on their machine. This allows traders to have uninterrupted access to historical tick data even when the grid is down, ensuring they can backtest their trading strategies anytime, anywhere. Experience the power of innov8finance for reliable and efficient trading analysis.
 
 > LEGAL DISCLAIMER  
 This project is intended for research and educational purposes only. The Yahoo! finance API is intended for personal use only.
@@ -52,6 +52,9 @@ Order of composite indexes:
 - price - (ticker_id, date_id)  
 
 *process*
+
+<!-- add link to "archive" here -->
+> Note: Early development of the MVP can be viewed in the Jupyter Notebooks in the archive folder.
 
 #### Roadmap
 
