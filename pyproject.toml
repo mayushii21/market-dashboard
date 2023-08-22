@@ -6,17 +6,15 @@ authors = [
     {name = "mayushii21", email = "122178787+mayushii21@users.noreply.github.com"},
 ]
 dependencies = [
+    "dash==2.12.1",
+    "dash-bootstrap-components",
+    "dash-bootstrap-templates",
+    "dash-trich-components",
     "requests",
     "beautifulsoup4",
     "lxml",
     "pandas",
     "yfinance",
-    "ipykernel",
-    "nbformat",
-    "dash",
-    "dash-bootstrap-components",
-    "dash-bootstrap-templates",
-    "dash-trich-components",
     "tqdm",
 ]
 requires-python = ">=3.8"
