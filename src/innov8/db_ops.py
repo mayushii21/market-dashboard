@@ -1,6 +1,7 @@
 import sqlite3
 from pathlib import Path
 
+import pandas as pd
 import requests
 import yfinance as yf
 from bs4 import BeautifulSoup
@@ -281,6 +282,50 @@ else:
     ]
     # Initiate tickers instance
     tickers = yf.Tickers(" ".join(ticker_symbols))
+
+### Load main data into a pandas DataFrame
+main_query = """
+SELECT t.symbol,
+    t.name,
+    s.name sector,
+    DATE(d.date, 'unixepoch') date,
+    p.open,
+    p.high,
+    p.low,
+    p.close,
+    p.volume,
+    e.name exchange,
+    tt.name type,
+    c.iso_code currency
+FROM price p
+    JOIN ticker t ON p.ticker_id = t.id
+    JOIN date d ON p.date_id = d.id
+    JOIN sector s ON t.sector_id = s.id
+    JOIN exchange e ON t.exchange_id = e.id
+    JOIN currency c ON t.currency_id = c.id
+    JOIN ticker_type tt ON t.ticker_type_id = tt.id
+"""
+
+
+# Create DataFrame from SQL query
+def load_main_table():
+    global main_table
+    main_table = pd.read_sql_query(
+        main_query,
+        con,
+        parse_dates=["date"],
+        dtype={
+            "symbol": "category",
+            "name": "category",
+            "sector": "category",
+            "exchange": "category",
+            "type": "category",
+            "currency": "category",
+        },
+    )
+
+
+load_main_table()
 
 
 # Define function for updating ohlc data for a given ticker by it's symbol
