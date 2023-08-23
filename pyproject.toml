@@ -27,3 +27,8 @@ build-backend = "pdm.backend"
 
 [project.scripts]
 innov8 = 'innov8.app:main'
+
+[project.urls]
+Homepage = "https://innov8.onrender.com/"
+Repository = "https://github.com/mayushii21/market-dashboard"
+"Bug Tracker" = "https://github.com/mayushii21/market-dashboard/issues"
