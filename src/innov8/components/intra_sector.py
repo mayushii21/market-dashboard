@@ -5,7 +5,7 @@ from dash import dash_table, dcc, html
 from dash.dependencies import Input, Output
 
 import innov8.db_ops as db
-from innov8.server import app
+from innov8.app import app
 
 # Store intermediate values
 # Data with the session option will survive a page refresh but will be forgotten on page close

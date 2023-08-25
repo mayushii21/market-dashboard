@@ -4,8 +4,8 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 
 import innov8.db_ops as db
+from innov8.app import app
 from innov8.db_ops import add_new_ohlc, load_main_table
-from innov8.server import app
 
 # Button with scope dropdown
 update_button = dbc.ButtonGroup(

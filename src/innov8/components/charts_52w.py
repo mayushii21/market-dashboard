@@ -5,7 +5,7 @@ from dash.dependencies import Input, Output
 from dash_bootstrap_templates import ThemeChangerAIO, template_from_url
 
 import innov8.db_ops as db
-from innov8.server import app  # Carousel showing 52-week data
+from innov8.app import app  # Carousel showing 52-week data
 
 carousel_52_week = dtc.Carousel(
     [

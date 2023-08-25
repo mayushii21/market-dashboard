@@ -2,8 +2,8 @@ import dash_trich_components as dtc
 from dash import html
 from dash.dependencies import Input, Output
 
+from innov8.app import app
 from innov8.db_ops import cur
-from innov8.server import app
 
 change_query = """
 WITH growth AS (

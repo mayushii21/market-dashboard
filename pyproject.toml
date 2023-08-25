@@ -1,6 +1,6 @@
 [project]
 name = "innov8"
-version = "0.0.1"
+version = "0.0.3"
 description = "an interactive market dashboard"
 authors = [
     {name = "mayushii21", email = "122178787+mayushii21@users.noreply.github.com"},
@@ -26,7 +26,7 @@ requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
 [project.scripts]
-innov8 = 'innov8.app:main'
+innov8 = 'innov8.run:main'
 
 [project.urls]
 Homepage = "https://innov8.onrender.com/"

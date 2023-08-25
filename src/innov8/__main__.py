@@ -1,3 +1,3 @@
-from innov8.app import main
+from innov8.run import main
 
 main()

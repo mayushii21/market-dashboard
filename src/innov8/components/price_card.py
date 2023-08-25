@@ -2,7 +2,7 @@ from dash import html
 from dash.dependencies import Input, Output
 
 import innov8.db_ops as db
-from innov8.server import app
+from innov8.app import app
 
 # div with main ticker information
 price_card = html.Div(

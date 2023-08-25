@@ -1,8 +1,8 @@
 from dash import dcc
 from dash.dependencies import Input, Output
 
+from innov8.app import app
 from innov8.db_ops import cur
-from innov8.server import app
 
 # list all sectors
 sector_query = """
