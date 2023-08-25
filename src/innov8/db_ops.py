@@ -7,25 +7,45 @@ import yfinance as yf
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 
-# Get the absolute path of the directory containing the script
-script_directory = Path(__file__).resolve().parent
-# Construct the absolute path to the database file
-database_path = script_directory / "stonks.db"
 
-# Connect to the database using the absolute path
-con = sqlite3.connect(database_path, check_same_thread=False)
-cur = con.cursor()
+# Define class for data storage operations
+class DataStore:
+    main_query = """
+    SELECT t.symbol,
+        t.name,
+        s.name sector,
+        DATE(d.date, 'unixepoch') date,
+        p.open,
+        p.high,
+        p.low,
+        p.close,
+        p.volume,
+        e.name exchange,
+        tt.name type,
+        c.iso_code currency
+    FROM price p
+        JOIN ticker t ON p.ticker_id = t.id
+        JOIN date d ON p.date_id = d.id
+        JOIN sector s ON t.sector_id = s.id
+        JOIN exchange e ON t.exchange_id = e.id
+        JOIN currency c ON t.currency_id = c.id
+        JOIN ticker_type tt ON t.ticker_type_id = tt.id
+    """
 
-# Check if the database is populated by checking if the price table is present
-if not cur.execute(
-    """
-    SELECT name
-    FROM sqlite_master
-    WHERE TYPE = 'table'
-        AND name = 'price'
-    """
-).fetchone():
+    def __init__(self):
+        # Get the absolute path of the directory containing the script
+        script_directory = Path(__file__).resolve().parent
+        # Construct the absolute path to the database file
+        database_path = script_directory / "stonks.db"
+        # Connect to the database using the absolute path
+        self.con = sqlite3.connect(database_path, check_same_thread=False)
+        self.cur = self.con.cursor()
+        self.ticker_symbols = None
+        self.main_table = None
+        self.tickers = None
+
     # Define function to scrape ticker symbols of S&P500 stocks
+    @staticmethod
     def scrape_symbols():
         # Set the User-Agent header to a string that mimics a popular web browser to get past firewall rules
         headers = {
@@ -41,7 +61,7 @@ if not cur.execute(
             for tr in soup.find("tbody").find_all("tr")
         ]
 
-    def create_tables():
+    def create_tables(self):
         create_tables_query = """
         CREATE TABLE IF NOT EXISTS exchange (
             id INTEGER PRIMARY KEY NOT NULL,
@@ -104,17 +124,17 @@ if not cur.execute(
         DROP TABLE IF EXISTS sector;
         DROP TABLE IF EXISTS currency;
         """
-        cur.executescript(drop_tables)
-        cur.executescript(create_tables_query)
-        con.commit()
+        self.cur.executescript(drop_tables)
+        self.cur.executescript(create_tables_query)
+        self.con.commit()
 
-    def insert_ticker_info():
+    def insert_ticker_info(self):
         print("Populating database with main ticker information...")
-        for symbol in tqdm(ticker_symbols):
+        for symbol in tqdm(self.ticker_symbols):
             try:
-                with con:
-                    info = tickers.tickers[symbol].info
-                    con.execute(
+                with self.con:
+                    info = self.tickers.tickers[symbol].info
+                    self.con.execute(
                         """
                         INSERT
                             OR IGNORE INTO currency (iso_code)
@@ -122,7 +142,7 @@ if not cur.execute(
                         """,
                         info,
                     )
-                    con.execute(
+                    self.con.execute(
                         """
                         INSERT
                             OR IGNORE INTO exchange (name)
@@ -130,7 +150,7 @@ if not cur.execute(
                         """,
                         info,
                     )
-                    con.execute(
+                    self.con.execute(
                         """
                         INSERT
                             OR IGNORE INTO ticker_type (name)
@@ -138,7 +158,7 @@ if not cur.execute(
                         """,
                         info,
                     )
-                    con.execute(
+                    self.con.execute(
                         """
                         INSERT
                             OR IGNORE INTO sector (name)
@@ -146,7 +166,7 @@ if not cur.execute(
                         """,
                         info,
                     )
-                    con.execute(
+                    self.con.execute(
                         """
                         INSERT INTO ticker (
                                 name,
@@ -188,11 +208,11 @@ if not cur.execute(
                 # print(f"Failed to insert {symbol}")
                 pass
 
-    def fill_ohlc():
+    def fill_ohlc(self):
         print("Populating database with OHLC data...")
         # Per ticker OHLC data retrieval - helps avoid rate limiting
         for symbol in tqdm(
-            cur.execute(
+            self.cur.execute(
                 """
                 SELECT symbol
                 FROM ticker
@@ -201,7 +221,7 @@ if not cur.execute(
         ):
             try:
                 # Retrieve OHLC data for symbol
-                ohlc_data = tickers.tickers[symbol[0]].history(
+                ohlc_data = self.tickers.tickers[symbol[0]].history(
                     start="2022-07-01", end="2023-07-01"
                 )[["Open", "High", "Low", "Close", "Volume"]]
                 # Convert the date to a unix timestamp (remove timezone holding local time representations)
@@ -211,9 +231,9 @@ if not cur.execute(
                 ohlc_data.reset_index(inplace=True)
                 # Convert to a list of dictionaries (records)
                 ohlc_data = ohlc_data.to_dict(orient="records")
-                with con:
+                with self.con:
                     # Inserting date could be optimized
-                    con.executemany(
+                    self.con.executemany(
                         """
                         INSERT
                             OR IGNORE INTO date (date)
@@ -224,7 +244,7 @@ if not cur.execute(
 
                     # Using an f-string is an SQL injection vulnerability,
                     # but given the context it doesn't matter, can be easily fixed if needed
-                    con.executemany(
+                    self.con.executemany(
                         f"""
                         INSERT INTO price (
                                 ticker_id,
@@ -260,149 +280,136 @@ if not cur.execute(
                 # print(f"[{symbol[0]}] Exception: {e}")
                 pass
 
-    ticker_symbols = scrape_symbols()
+    # Create DataFrame from SQL query
+    def load_main_table(self):
+        self.main_table = pd.read_sql_query(
+            self.main_query,
+            self.con,
+            parse_dates=["date"],
+            dtype={
+                "symbol": "category",
+                "name": "category",
+                "sector": "category",
+                "exchange": "category",
+                "type": "category",
+                "currency": "category",
+            },
+        )
+
+    def initiate_tickers_obj(self, scrape):
+        if scrape:
+            self.ticker_symbols = self.scrape_symbols()
+        else:
+            self.ticker_symbols = [
+                symbol[0]
+                for symbol in self.con.execute(
+                    """
+                    SELECT symbol
+                    FROM ticker
+                    """
+                ).fetchall()
+            ]
+        # Initiate tickers instance
+        self.tickers = yf.Tickers(" ".join(self.ticker_symbols))
+
+    # Define function for updating ohlc data for a given ticker by it's symbol
+    def add_new_ohlc(self, symbol):
+        try:
+            # Get date for latest entry
+            latest_entry = self.cur.execute(
+                """
+                SELECT DATE(max(date) + 86400, 'unixepoch')
+                FROM price p
+                    JOIN ticker t ON t.id = p.ticker_id
+                    JOIN date d ON p.date_id = d.id
+                WHERE t.symbol = ?
+                """,
+                (symbol,),
+            ).fetchone()[0]
+            # Retrieve new OHLC data for symbol
+            ohlc_data = self.tickers.tickers[symbol].history(start=latest_entry)[
+                ["Open", "High", "Low", "Close", "Volume"]
+            ]
+            # Convert the date to a unix timestamp (remove timezone holding local time representations)
+            ohlc_data.index = ohlc_data.index.tz_localize(None).astype("int") / 10**9
+            ohlc_data.reset_index(inplace=True)
+            # Convert to a list of dictionaries (records)
+            ohlc_data = ohlc_data.to_dict(orient="records")
+            with self.con:
+                # Inserting date could be optimized
+                self.con.executemany(
+                    """
+                    INSERT
+                        OR IGNORE INTO date (date)
+                    VALUES (:Date)
+                    """,
+                    ohlc_data,
+                )
+
+                # Using an f-string is an SQL injection vulnerability,
+                # but given the context it doesn't matter
+                self.con.executemany(
+                    f"""
+                    INSERT INTO price (
+                            ticker_id,
+                            date_id,
+                            OPEN,
+                            high,
+                            low,
+                            close,
+                            volume
+                        )
+                    VALUES (
+                            (
+                                SELECT id
+                                FROM ticker
+                                WHERE symbol = '{symbol}'
+                            ),
+                            (
+                                SELECT id
+                                FROM date
+                                WHERE date = :Date
+                            ),
+                            :Open,
+                            :High,
+                            :Low,
+                            :Close,
+                            :Volume
+                        )
+                    """,
+                    ohlc_data,
+                )
+                print(f"Successfully updated {symbol}")
+        except Exception as e:
+            print(f"[{symbol}] Exception: {e}")
+            # pass
+
+
+data = DataStore()
+
+# Check if the database is populated by checking if the price table is present
+if not data.cur.execute(
+    """
+    SELECT name
+    FROM sqlite_master
+    WHERE TYPE = 'table'
+        AND name = 'price'
+    """
+).fetchone():
     # Create necessary tables
-    create_tables()
-    # Initiate tickers instance
-    tickers = yf.Tickers(" ".join(ticker_symbols))
+    data.create_tables()
+    data.initiate_tickers_obj(scrape=True)
     # Fill database with ticker information
-    insert_ticker_info()
+    data.insert_ticker_info()
     # Download data and fill date and price tables
-    fill_ohlc()
+    data.fill_ohlc()
 # If the database is already populated
 else:
-    ticker_symbols = [
-        symbol[0]
-        for symbol in con.execute(
-            """
-            SELECT symbol
-            FROM ticker
-            """
-        ).fetchall()
-    ]
-    # Initiate tickers instance
-    tickers = yf.Tickers(" ".join(ticker_symbols))
+    data.initiate_tickers_obj(scrape=False)
 
-### Load main data into a pandas DataFrame
-main_query = """
-SELECT t.symbol,
-    t.name,
-    s.name sector,
-    DATE(d.date, 'unixepoch') date,
-    p.open,
-    p.high,
-    p.low,
-    p.close,
-    p.volume,
-    e.name exchange,
-    tt.name type,
-    c.iso_code currency
-FROM price p
-    JOIN ticker t ON p.ticker_id = t.id
-    JOIN date d ON p.date_id = d.id
-    JOIN sector s ON t.sector_id = s.id
-    JOIN exchange e ON t.exchange_id = e.id
-    JOIN currency c ON t.currency_id = c.id
-    JOIN ticker_type tt ON t.ticker_type_id = tt.id
-"""
-
-
-# Create DataFrame from SQL query
-def load_main_table():
-    global main_table
-    main_table = pd.read_sql_query(
-        main_query,
-        con,
-        parse_dates=["date"],
-        dtype={
-            "symbol": "category",
-            "name": "category",
-            "sector": "category",
-            "exchange": "category",
-            "type": "category",
-            "currency": "category",
-        },
-    )
-
-
-load_main_table()
-
-
-# Define function for updating ohlc data for a given ticker by it's symbol
-def add_new_ohlc(symbol):
-    try:
-        # Get date for latest entry
-        latest_entry = cur.execute(
-            """
-            SELECT DATE(max(date) + 86400, 'unixepoch')
-            FROM price p
-                JOIN ticker t ON t.id = p.ticker_id
-                JOIN date d ON p.date_id = d.id
-            WHERE t.symbol = ?
-            """,
-            (symbol,),
-        ).fetchone()[0]
-        # Retrieve new OHLC data for symbol
-        ohlc_data = tickers.tickers[symbol].history(start=latest_entry)[
-            ["Open", "High", "Low", "Close", "Volume"]
-        ]
-        # Convert the date to a unix timestamp (remove timezone holding local time representations)
-        ohlc_data.index = ohlc_data.index.tz_localize(None).astype("int") / 10**9
-        ohlc_data.reset_index(inplace=True)
-        # Convert to a list of dictionaries (records)
-        ohlc_data = ohlc_data.to_dict(orient="records")
-        with con:
-            # Inserting date could be optimized
-            con.executemany(
-                """
-                INSERT
-                    OR IGNORE INTO date (date)
-                VALUES (:Date)
-                """,
-                ohlc_data,
-            )
-
-            # Using an f-string is an SQL injection vulnerability,
-            # but given the context it doesn't matter
-            con.executemany(
-                f"""
-                INSERT INTO price (
-                        ticker_id,
-                        date_id,
-                        OPEN,
-                        high,
-                        low,
-                        close,
-                        volume
-                    )
-                VALUES (
-                        (
-                            SELECT id
-                            FROM ticker
-                            WHERE symbol = '{symbol}'
-                        ),
-                        (
-                            SELECT id
-                            FROM date
-                            WHERE date = :Date
-                        ),
-                        :Open,
-                        :High,
-                        :Low,
-                        :Close,
-                        :Volume
-                    )
-                """,
-                ohlc_data,
-            )
-            print(f"Successfully updated {symbol}")
-    except Exception as e:
-        print(f"[{symbol}] Exception: {e}")
-        # pass
-
+data.load_main_table()
 
 print("Successfully established DB connection")
 
 # con.commit()
-# con.close()
 # con.close()

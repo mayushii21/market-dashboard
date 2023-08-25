@@ -2,7 +2,7 @@ from dash import dcc
 from dash.dependencies import Input, Output
 
 from innov8.app import app
-from innov8.db_ops import cur
+from innov8.db_ops import data
 
 # list all sectors
 sector_query = """
@@ -21,7 +21,7 @@ ORDER BY symbol
 
 # The economic sectors dropdown
 dropdown_1 = dcc.Dropdown(
-    options=[sector[0] for sector in cur.execute(sector_query)],
+    options=[sector[0] for sector in data.cur.execute(sector_query)],
     value="Technology",
     id="sector-dropdown",
     style={"height": "37px"},
@@ -49,5 +49,5 @@ dropdown_2 = dcc.Dropdown(
 )
 def update_symbols_dropdown(sector):
     # Select ticker symbols from selected sector
-    options = [symbol[0] for symbol in cur.execute(symbols_query, (sector,))]
+    options = [symbol[0] for symbol in data.cur.execute(symbols_query, (sector,))]
     return options, options[0]

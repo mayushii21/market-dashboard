@@ -4,8 +4,8 @@ from dash import dcc
 from dash.dependencies import Input, Output
 from dash_bootstrap_templates import ThemeChangerAIO, template_from_url
 
-import innov8.db_ops as db
 from innov8.app import app  # Carousel showing 52-week data
+from innov8.db_ops import data
 
 carousel_52_week = dtc.Carousel(
     [
@@ -36,7 +36,7 @@ carousel_52_week = dtc.Carousel(
 )
 def update_52_week_charts(symbol, theme, update):
     # Filter data by ticker symbol
-    ticker = db.main_table[db.main_table.symbol == symbol].set_index("date")
+    ticker = data.main_table[data.main_table.symbol == symbol].set_index("date")
 
     # The output from this resample operation feeds the weekly closing price chart
     weekly_52 = (

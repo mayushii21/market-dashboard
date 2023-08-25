@@ -3,7 +3,7 @@ from dash import html
 from dash.dependencies import Input, Output
 
 from innov8.app import app
-from innov8.db_ops import cur
+from innov8.db_ops import data
 
 change_query = """
 WITH growth AS (
@@ -49,7 +49,7 @@ carousel = dtc.Carousel(
                 ),
             ]
         )
-        for symbol, change in cur.execute(change_query)
+        for symbol, change in data.cur.execute(change_query)
     ],
     id="main-carousel",
     autoplay=True,
@@ -77,5 +77,5 @@ def update_main_carousel(update):
                 ),
             ]
         )
-        for symbol, change in cur.execute(change_query)
+        for symbol, change in data.cur.execute(change_query)
     ]

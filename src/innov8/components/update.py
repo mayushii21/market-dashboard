@@ -3,9 +3,8 @@ from dash import dcc
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 
-import innov8.db_ops as db
 from innov8.app import app
-from innov8.db_ops import add_new_ohlc, load_main_table
+from innov8.db_ops import data
 
 # Button with scope dropdown
 update_button = dbc.ButtonGroup(
@@ -58,18 +57,18 @@ def update_ticker_data(button, scope, symbol, sector_symbols, sector, up_to_date
         raise PreventUpdate
     # Add new data for the chosen scope and update the update-state
     if scope == "Ticker":
-        add_new_ohlc(symbol)
+        data.add_new_ohlc(symbol)
         up_to_date[symbol] = True
     elif scope == "Sector":
         for symbol in sector_symbols:
-            add_new_ohlc(symbol)
+            data.add_new_ohlc(symbol)
         up_to_date[sector] = True
     else:
-        for symbol in db.main_table.symbol.unique():
-            add_new_ohlc(symbol)
+        for symbol in data.main_table.symbol.unique():
+            data.add_new_ohlc(symbol)
         up_to_date["All"] = True
     # Reload the main_table
-    load_main_table()
+    data.load_main_table()
     return up_to_date
 
 

@@ -1,8 +1,8 @@
 from dash import html
 from dash.dependencies import Input, Output
 
-import innov8.db_ops as db
 from innov8.app import app
+from innov8.db_ops import data
 
 # div with main ticker information
 price_card = html.Div(
@@ -74,8 +74,8 @@ price_card = html.Div(
     Input("update-state", "data"),
 )
 def update_symbol_data(symbol, update):
-    ticker = db.main_table.loc[
-        db.main_table.symbol == symbol,
+    ticker = data.main_table.loc[
+        data.main_table.symbol == symbol,
         ["name", "close", "exchange", "sector", "currency"],
     ].tail(2)
     # Getting the chosen symbol's current price and its change in comparison to its previous value

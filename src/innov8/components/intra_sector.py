@@ -4,8 +4,8 @@ import pandas as pd
 from dash import dash_table, dcc, html
 from dash.dependencies import Input, Output
 
-import innov8.db_ops as db
 from innov8.app import app
+from innov8.db_ops import data
 
 # Store intermediate values
 # Data with the session option will survive a page refresh but will be forgotten on page close
@@ -20,8 +20,8 @@ intra_sector_data = dcc.Store(id="intra_sector_data", storage_type="session")
 )
 def calculate_table_data(sector, update):
     # Filter by sector and select necessary columns
-    sector_table = db.main_table.loc[
-        db.main_table.sector == sector, ["symbol", "date", "close"]
+    sector_table = data.main_table.loc[
+        data.main_table.sector == sector, ["symbol", "date", "close"]
     ]
     # Convert to string from category
     sector_table["symbol"] = sector_table.symbol.astype(str)

@@ -8,8 +8,8 @@ from dash.exceptions import PreventUpdate
 from dash_bootstrap_templates import ThemeChangerAIO, template_from_url
 from plotly.subplots import make_subplots
 
-import innov8.db_ops as db
 from innov8.app import app
+from innov8.db_ops import data
 
 # The price (candlestick) chart
 price_chart = dcc.Graph(id="price-chart")
@@ -81,7 +81,7 @@ sma = dbc.InputGroup(
 )
 def update_price_chart(symbol, ema, sma, ema_period, sma_period, theme, update):
     # Filter data by ticker symbol
-    ticker = db.main_table[db.main_table.symbol == symbol].set_index("date")
+    ticker = data.main_table[data.main_table.symbol == symbol].set_index("date")
     green = "#079A80"
     red = "#F23645"
     # Add color for plotting
@@ -218,7 +218,7 @@ def update_price_chart(symbol, ema, sma, ema_period, sma_period, theme, update):
 )
 def update_indicator_period(fig, symbol, ema, sma, ema_period, sma_period):
     # Filter data by ticker symbol
-    ticker = db.main_table[db.main_table.symbol == symbol].set_index("date")
+    ticker = data.main_table[data.main_table.symbol == symbol].set_index("date")
     # If no indicator is selected - prevent update
     if not (ema or sma):
         raise PreventUpdate
