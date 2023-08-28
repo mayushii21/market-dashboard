@@ -3,46 +3,43 @@ from dash import dcc
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 
-from innov8.app import app
-from innov8.db_ops import data
+from innov8.components.decorators import callback, data_access
+
 
 # Button with scope dropdown
-update_button = dbc.ButtonGroup(
-    [
-        dbc.Button(
-            id="update-button",
-            outline=True,
-            style={
-                "height": "37px",
-                "width": "140px",
-                "display": "flex",
-                "justifyContent": "center",
-                "alignItems": "center",
-            },
-        ),
-        # dbc.DropdownMenu(
-        #     [dbc.DropdownMenuItem("Ticker"), dbc.DropdownMenuItem("All")],
-        #     label="Update Scope",
-        #     group=True,
-        # ),
-        dcc.Dropdown(
-            options=["Ticker", "Sector", "All"],
-            value="Ticker",
-            id="update-dropdown",
-            style={"width": "8vw", "height": "37px"},
-            clearable=False,
-        ),
-    ]
-)
+def update_button():
+    return dbc.ButtonGroup(
+        [
+            dbc.Button(
+                id="update-button",
+                outline=True,
+                style={
+                    "height": "37px",
+                    "width": "140px",
+                    "display": "flex",
+                    "justifyContent": "center",
+                    "alignItems": "center",
+                },
+            ),
+            dcc.Dropdown(
+                options=["Ticker", "Sector", "All"],
+                value="Ticker",
+                id="update-dropdown",
+                style={"width": "8vw", "height": "37px"},
+                clearable=False,
+            ),
+        ]
+    )
+
 
 # Store update state
 # Data with the session option will survive a page refresh but will be forgotten on page close
-update_state = dcc.Store(id="update-state", data={}, storage_type="session")
+def update_state():
+    return dcc.Store(id="update-state", data={}, storage_type="session")
 
 
-### *Note here for future experiments* (loading component)
 # Update with new ohlc data on button press
-@app.callback(
+@callback(
     Output("update-state", "data"),
     Input("update-button", "n_clicks"),
     State("update-dropdown", "value"),
@@ -51,7 +48,8 @@ update_state = dcc.Store(id="update-state", data={}, storage_type="session")
     State("sector-dropdown", "value"),
     State("update-state", "data"),
 )
-def update_ticker_data(button, scope, symbol, sector_symbols, sector, up_to_date):
+@data_access
+def update_ticker_data(data, button, scope, symbol, sector_symbols, sector, up_to_date):
     # Prevent the initial callback to avoid updating the store for nothing
     if button is None:
         raise PreventUpdate
@@ -73,7 +71,7 @@ def update_ticker_data(button, scope, symbol, sector_symbols, sector, up_to_date
 
 
 # Update the style of the update button
-@app.callback(
+@callback(
     Output("update-button", "children"),
     Output("update-button", "color"),
     Output("update-button", "disabled"),

@@ -1,68 +1,69 @@
 from dash import html
 from dash.dependencies import Input, Output
 
-from innov8.app import app
-from innov8.db_ops import data
+from innov8.components.decorators import callback, data_access
+
 
 # div with main ticker information
-price_card = html.Div(
-    [
-        # Symbol
-        html.H4(
-            id="ticker-symbol",
-            style={
-                "textAlign": "left",
-                "marginTop": 10,
-                "marginBottom": -7,
-            },
-        ),
-        # Name
-        html.P(
-            id="ticker-name",
-            style={
-                "fontSize": "12px",
-                "textAlign": "left",
-                "marginBottom": -7,
-            },
-        ),
-        # Price and currency
-        html.P(
-            id="ticker-price",
-            style={
-                "fontSize": "27px",
-                "textAlign": "right",
-                "marginBottom": -7,
-            },
-        ),
-        # Price change (style is specified in callback)
-        html.P(
-            id="ticker-change",
-        ),
-        # Exchange
-        html.P(
-            id="exchange-name",
-            style={
-                "textAlign": "left",
-                "fontSize": "14px",
-                "marginBottom": -3,
-            },
-        ),
-        # Economic sector
-        html.P(
-            id="economic-sector",
-            style={
-                "textAlign": "left",
-                "fontSize": "14px",
-            },
-        ),
-    ],
-    id="ticker-data",
-    style={"height": "140px"},
-)
+def price_card():
+    return html.Div(
+        [
+            # Symbol
+            html.H4(
+                id="ticker-symbol",
+                style={
+                    "textAlign": "left",
+                    "marginTop": 10,
+                    "marginBottom": -7,
+                },
+            ),
+            # Name
+            html.P(
+                id="ticker-name",
+                style={
+                    "fontSize": "12px",
+                    "textAlign": "left",
+                    "marginBottom": -7,
+                },
+            ),
+            # Price and currency
+            html.P(
+                id="ticker-price",
+                style={
+                    "fontSize": "27px",
+                    "textAlign": "right",
+                    "marginBottom": -7,
+                },
+            ),
+            # Price change (style is specified in callback)
+            html.P(
+                id="ticker-change",
+            ),
+            # Exchange
+            html.P(
+                id="exchange-name",
+                style={
+                    "textAlign": "left",
+                    "fontSize": "14px",
+                    "marginBottom": -3,
+                },
+            ),
+            # Economic sector
+            html.P(
+                id="economic-sector",
+                style={
+                    "textAlign": "left",
+                    "fontSize": "14px",
+                },
+            ),
+        ],
+        id="ticker-data",
+        style={"height": "140px"},
+    )
 
 
 # The following function will edit the values being displayed in the "ticker-data" Div
-@app.callback(
+@callback(
     Output("ticker-symbol", "children"),
     Output("ticker-name", "children"),
     Output("ticker-price", "children"),
@@ -73,7 +74,8 @@ price_card = html.Div(
     Input("symbol-dropdown", "value"),
     Input("update-state", "data"),
 )
-def update_symbol_data(symbol, update):
+@data_access
+def update_symbol_data(data, symbol, update):
     ticker = data.main_table.loc[
         data.main_table.symbol == symbol,
         ["name", "close", "exchange", "sector", "currency"],

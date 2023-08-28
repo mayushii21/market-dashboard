@@ -4,21 +4,23 @@ import pandas as pd
 from dash import dash_table, dcc, html
 from dash.dependencies import Input, Output
 
-from innov8.app import app
-from innov8.db_ops import data
+from innov8.components.decorators import callback, data_access
+
 
 # Store intermediate values
 # Data with the session option will survive a page refresh but will be forgotten on page close
-intra_sector_data = dcc.Store(id="intra_sector_data", storage_type="session")
+def intra_sector_data():
+    return dcc.Store(id="intra_sector_data", storage_type="session")
 
 
 # Calculate intra-sector data for "correlation-table", update when sector changes or data is updated
-@app.callback(
+@callback(
     Output("intra_sector_data", "data"),
     Input("sector-dropdown", "value"),
     Input("update-state", "data"),
 )
-def calculate_table_data(sector, update):
+@data_access
+def calculate_table_data(data, sector, update):
     # Filter by sector and select necessary columns
     sector_table = data.main_table.loc[
         data.main_table.sector == sector, ["symbol", "date", "close"]
@@ -46,38 +48,39 @@ def calculate_table_data(sector, update):
 
 
 # This DataTable contains intra-sector ticker prices and 90-day correlations
-table_info = html.Div(
-    [
-        html.Label(
-            "Intra-sector Data Table",
-            style={"textAlign": "center", "display": "block"},
-        ),
-        dash_table.DataTable(
-            id="correlation-table",
-            style_cell={
-                "font_size": "12px",
-                "textAlign": "right",
-                "padding-right": "7px",
-            },
-            style_cell_conditional=[
-                {
-                    "if": {"column_id": "symbol"},
-                    "textAlign": "left",
-                    "padding-left": "7px",
+def table_info():
+    return html.Div(
+        [
+            html.Label(
+                "Intra-sector Data Table",
+                style={"textAlign": "center", "display": "block"},
+            ),
+            dash_table.DataTable(
+                id="correlation-table",
+                style_cell={
+                    "font_size": "12px",
+                    "textAlign": "right",
+                    "padding-right": "7px",
                 },
-                {"if": {"column_id": ["price", "90-day corr"]}, "width": "30%"},
-            ],
-            style_header={"backgroundColor": "rgba(0,0,0,0)"},
-            style_data={"backgroundColor": "rgba(0,0,0,0)"},
-            style_table={"height": "100px", "overflowY": "auto"},
-            style_as_list_view=True,
-        ),
-    ]
-)
+                style_cell_conditional=[
+                    {
+                        "if": {"column_id": "symbol"},
+                        "textAlign": "left",
+                        "padding-left": "7px",
+                    },
+                    {"if": {"column_id": ["price", "90-day corr"]}, "width": "30%"},
+                ],
+                style_header={"backgroundColor": "rgba(0,0,0,0)"},
+                style_data={"backgroundColor": "rgba(0,0,0,0)"},
+                style_table={"height": "100px", "overflowY": "auto"},
+                style_as_list_view=True,
+            ),
+        ]
+    )
 
 
 # Update the table
-@app.callback(
+@callback(
     Output("correlation-table", "data"),
     Input("symbol-dropdown", "value"),
     Input("intra_sector_data", "data"),

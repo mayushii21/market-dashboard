@@ -2,8 +2,7 @@ import dash_trich_components as dtc
 from dash import html
 from dash.dependencies import Input, Output
 
-from innov8.app import app
-from innov8.db_ops import data
+from innov8.components.decorators import callback, data_access
 
 change_query = """
 WITH growth AS (
@@ -35,36 +34,40 @@ ORDER BY ABS(growth_percentage) DESC
 LIMIT 10
 """
 
+
 # Accepts a list of elements (list comp of html divs in this case) to "carouse" through
-carousel = dtc.Carousel(
-    [
-        html.Div(
-            [
-                # Ticker symbol
-                html.Span(symbol, style={"marginRight": "10px"}),
-                # Change (colored)
-                html.Span(
-                    f"{'+' if change > 0 else ''}{change:.2f}%",
-                    style={"color": "green" if change > 0 else "red"},
-                ),
-            ]
-        )
-        for symbol, change in data.cur.execute(change_query)
-    ],
-    id="main-carousel",
-    autoplay=True,
-    speed=500,
-    slides_to_show=5,
-    responsive=[{"breakpoint": 9999, "settings": {"arrows": False}}],
-)
+@data_access
+def carousel(data):
+    return dtc.Carousel(
+        [
+            html.Div(
+                [
+                    # Ticker symbol
+                    html.Span(symbol, style={"marginRight": "10px"}),
+                    # Change (colored)
+                    html.Span(
+                        f"{'+' if change > 0 else ''}{change:.2f}%",
+                        style={"color": "green" if change > 0 else "red"},
+                    ),
+                ]
+            )
+            for symbol, change in data.cur.execute(change_query)
+        ],
+        id="main-carousel",
+        autoplay=True,
+        speed=500,
+        slides_to_show=5,
+        responsive=[{"breakpoint": 9999, "settings": {"arrows": False}}],
+    )
 
 
 # Update with new ohlc data on button press
-@app.callback(
+@callback(
     Output("main-carousel", "children"),
     Input("update-state", "data"),
 )
-def update_main_carousel(update):
+@data_access
+def update_main_carousel(data, update):
     return [
         html.Div(
             [

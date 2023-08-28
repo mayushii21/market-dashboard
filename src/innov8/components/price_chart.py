@@ -8,68 +8,74 @@ from dash.exceptions import PreventUpdate
 from dash_bootstrap_templates import ThemeChangerAIO, template_from_url
 from plotly.subplots import make_subplots
 
-from innov8.app import app
-from innov8.db_ops import data
+from innov8.components.decorators import callback, data_access
+
 
 # The price (candlestick) chart
-price_chart = dcc.Graph(id="price-chart")
+def price_chart():
+    return dcc.Graph(id="price-chart")
+
+
 # EMA switch with selectable period
-ema = dbc.InputGroup(
-    [
-        dbc.InputGroupText(
-            dbc.Checklist(["EMA"], id="ema", switch=True, persistence=True),
-            style={
-                "height": "37px",
-                "display": "flex",
-                "justifyContent": "center",
-                "alignItems": "center",
-            },
-            class_name="btn btn-outline-secondary",
-        ),
-        dbc.Input(
-            id="ema-period",
-            placeholder="Period",
-            type="number",
-            min=1,
-            max=200,
-            step=1,
-            value=9,
-            persistence=True,
-            style={"paddingLeft": 10},
-        ),
-    ],
-)
+def ema_switch():
+    return dbc.InputGroup(
+        [
+            dbc.InputGroupText(
+                dbc.Checklist(["EMA"], id="ema", switch=True, persistence=True),
+                style={
+                    "height": "37px",
+                    "display": "flex",
+                    "justifyContent": "center",
+                    "alignItems": "center",
+                },
+                class_name="btn btn-outline-secondary",
+            ),
+            dbc.Input(
+                id="ema-period",
+                placeholder="Period",
+                type="number",
+                min=1,
+                max=200,
+                step=1,
+                value=9,
+                persistence=True,
+                style={"paddingLeft": 10},
+            ),
+        ],
+    )
+
 
 # SMA switch with selectable period
-sma = dbc.InputGroup(
-    [
-        dbc.InputGroupText(
-            dbc.Checklist(["SMA"], id="sma", switch=True, persistence=True),
-            style={
-                "height": "37px",
-                "display": "flex",
-                "justifyContent": "center",
-                "alignItems": "center",
-            },
-            class_name="btn btn-outline-secondary",
-        ),
-        dbc.Input(
-            id="sma-period",
-            placeholder="Period",
-            type="number",
-            min=1,
-            max=200,
-            step=1,
-            value=50,
-            persistence=True,
-            style={"paddingLeft": 10},
-        ),
-    ],
-)
+def sma_switch():
+    return dbc.InputGroup(
+        [
+            dbc.InputGroupText(
+                dbc.Checklist(["SMA"], id="sma", switch=True, persistence=True),
+                style={
+                    "height": "37px",
+                    "display": "flex",
+                    "justifyContent": "center",
+                    "alignItems": "center",
+                },
+                class_name="btn btn-outline-secondary",
+            ),
+            dbc.Input(
+                id="sma-period",
+                placeholder="Period",
+                type="number",
+                min=1,
+                max=200,
+                step=1,
+                value=50,
+                persistence=True,
+                style={"paddingLeft": 10},
+            ),
+        ],
+    )
 
 
 # Update price chart (with indicators)
-@app.callback(
+@callback(
     Output("price-chart", "figure"),
     Input("symbol-dropdown", "value"),
     Input("ema", "value"),
@@ -79,7 +85,8 @@ sma = dbc.InputGroup(
     Input(ThemeChangerAIO.ids.radio("theme"), "value"),
     Input("update-state", "data"),
 )
-def update_price_chart(symbol, ema, sma, ema_period, sma_period, theme, update):
+@data_access
+def update_price_chart(data, symbol, ema, sma, ema_period, sma_period, theme, update):
     # Filter data by ticker symbol
     ticker = data.main_table[data.main_table.symbol == symbol].set_index("date")
     green = "#079A80"
@@ -206,7 +213,7 @@ def update_price_chart(symbol, ema, sma, ema_period, sma_period, theme, update):
 
 
 # Update indicators using partial property assignment
-@app.callback(
+@callback(
     Output("price-chart", "figure", allow_duplicate=True),
     State("price-chart", "figure"),
     State("symbol-dropdown", "value"),
@@ -216,7 +223,8 @@ def update_price_chart(symbol, ema, sma, ema_period, sma_period, theme, update):
     Input("sma-period", "value"),
     prevent_initial_call=True,
 )
-def update_indicator_period(fig, symbol, ema, sma, ema_period, sma_period):
+@data_access
+def update_indicator_period(data, fig, symbol, ema, sma, ema_period, sma_period):
     # Filter data by ticker symbol
     ticker = data.main_table[data.main_table.symbol == symbol].set_index("date")
     # If no indicator is selected - prevent update

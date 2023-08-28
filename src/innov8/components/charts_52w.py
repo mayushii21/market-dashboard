@@ -4,37 +4,40 @@ from dash import dcc
 from dash.dependencies import Input, Output
 from dash_bootstrap_templates import ThemeChangerAIO, template_from_url
 
-from innov8.app import app  # Carousel showing 52-week data
-from innov8.db_ops import data
+from innov8.components.decorators import callback, data_access
 
-carousel_52_week = dtc.Carousel(
-    [
-        dcc.Graph(id="52-week-price-chart"),
-        dcc.Graph(id="52-week-high-low-indicator"),
-    ],
-    slides_to_show=1,
-    vertical=True,
-    autoplay=True,
-    speed=3000,
-    style={
-        "height": 230,
-        "width": 290,
-    },
-    responsive=[
-        {"breakpoint": 9999, "settings": {"arrows": False}},
-    ],
-)
+
+# Carousel showing 52-week data
+def carousel_52_week():
+    return dtc.Carousel(
+        [
+            dcc.Graph(id="52-week-price-chart"),
+            dcc.Graph(id="52-week-high-low-indicator"),
+        ],
+        slides_to_show=1,
+        vertical=True,
+        autoplay=True,
+        speed=3000,
+        style={
+            "height": 230,
+            "width": 290,
+        },
+        responsive=[
+            {"breakpoint": 9999, "settings": {"arrows": False}},
+        ],
+    )
 
 
 # This function is responsible for updating the weekly price chart and the gauge (speedometer) chart
-@app.callback(
+@callback(
     Output("52-week-price-chart", "figure"),
     Output("52-week-high-low-indicator", "figure"),
     Input("symbol-dropdown", "value"),
     Input(ThemeChangerAIO.ids.radio("theme"), "value"),
     Input("update-state", "data"),
 )
-def update_52_week_charts(symbol, theme, update):
+@data_access
+def update_52_week_charts(data, symbol, theme, update):
     # Filter data by ticker symbol
     ticker = data.main_table[data.main_table.symbol == symbol].set_index("date")
 
