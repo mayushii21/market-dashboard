@@ -5,7 +5,7 @@ name: Publish package to PyPi
 on:
   # Triggers the workflow on a push event but only for the main branch
   push:
-    branches: [main]
+    branches: [development]
 
 #   release:
 #     types: [published]
