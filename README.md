@@ -72,9 +72,28 @@ Primary keys and attributes with unique constraints are automatically indexed an
 Order of composite indexes:
 
 - `ticker` table - `sector_id` -> `exchange_id` -> `currency_id` -> `ticker_type_id`
-- `price` table - `ticker_id` -> `date_id`  
+- `price` table (composite primary key) - `ticker_id` -> `date_id`  
 
-*process*
+The `DataStore` class in the [`db_ops`](src/innov8/db_ops.py) module is responsible for handling data-related operations. This includes managing and updating the database, as well as loading the main DataFrame used by the Dash components. The Dash `app` is initialized within the [`app`](src/innov8/app.py) module. Additionally, two convenience decorators are created in the [`decorators`](src/innov8/components/decorators.py) module within the [`components`](src/innov8/components) folder. These decorators facilitate passing data and registering callbacks. Components and their respective callbacks are grouped and stored in separate modules within the [`components`](src/innov8/components) folder. All these components are then consolidated into the final app layout, located in the root directory of the package, specifically within the [`layout`](src/innov8/layout.py) module. Finally, the app is imported from the [`layout`](src/innov8/layout.py) module into the [`run`](src/innov8/run.py) module, which serves as the entry point for running the app. For deployment, a `server` variable is also created within the [`run`](src/innov8/run.py) module to be used with `gunicorn`.
+
+Below is a helpful static call graph designed to assist in familiarizing oneself with and understanding the codebase. It illustrates the calling relationships between subroutines within the program, providing an interprocedural view of the code.
+
+<div align="center">
+    <img src="doc/call_graph.png">
+</div>
+
+The following diagram presents a simplified call graph:
+
+<div align="center">
+    <img src="doc/simplified_call_graph.svg">
+</div>
+
+Note that callbacks are not depicted in the call graphs since they are not explicitly called in the code, but are implicitly triggered and executed by the Dash `app` when the `Input` to a callback function changes. When a user interacts with a Dash component, it triggers the associated callback function to run. Dash captures the input values from the components and provides them as arguments to the callback function. The callback function then performs the necessary computations or updates based on the input values and returns the updated output values.  
+The following Dash callback graph displays a visual representation of the callbacks: which order they are fired in, how long they take, and what data is passed back and forth.
+
+<div align="center">
+    <img src="doc/callback_graph.svg">
+</div>
 
 > Note: Early development of the MVP can be viewed in the Jupyter Notebooks located within the [archive](archive) folder.
 
