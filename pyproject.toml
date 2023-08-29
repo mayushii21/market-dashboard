@@ -1,0 +1,34 @@
+[project]
+name = "innov8"
+version = "0.0.6-beta"
+description = "an interactive market dashboard"
+authors = [
+    {name = "mayushii21", email = "122178787+mayushii21@users.noreply.github.com"},
+]
+dependencies = [
+    "dash==2.12.1",
+    "dash-bootstrap-components",
+    "dash-bootstrap-templates",
+    "dash-trich-components",
+    "requests",
+    "beautifulsoup4",
+    "lxml",
+    "pandas",
+    "yfinance",
+    "tqdm",
+]
+requires-python = ">=3.8"
+readme = "README.md"
+license = {text = "BSD-3-Clause license"}
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[project.scripts]
+innov8 = 'innov8.run:main'
+
+[project.urls]
+Homepage = "https://innov8.onrender.com/"
+Repository = "https://github.com/mayushii21/market-dashboard"
+"Bug Tracker" = "https://github.com/mayushii21/market-dashboard/issues"

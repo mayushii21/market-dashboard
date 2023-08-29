@@ -1,0 +1,41 @@
+# This workflow will upload a Python Package using PDM when a release is created
+name: Publish package to PyPI
+
+# Controls when the action will run
+on:
+  # Triggers the workflow on a push event but only for the main branch
+  # push:
+  #   branches: [main]
+
+  release:
+    types: [published]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  # This workflow contains a single job with a job_id "publish"
+  publish:
+    name: upload release to PyPI
+
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    permissions:
+      # IMPORTANT: this permission is mandatory for trusted publishing
+      id-token: write
+
+    steps:
+      # Checks-out the repository
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.x'
+
+      - name: Setup Python and PDM
+        uses: pdm-project/setup-pdm@v3
+
+      - name: Publish package distributions to PyPI
+        run: pdm publish
