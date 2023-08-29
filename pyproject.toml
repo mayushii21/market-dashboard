@@ -1,6 +1,6 @@
 [project]
 name = "innov8"
-version = "0.0.4"
+version = "v0.0.5-beta"
 description = "an interactive market dashboard"
 authors = [
     {name = "mayushii21", email = "122178787+mayushii21@users.noreply.github.com"},
