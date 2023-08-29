@@ -10,7 +10,7 @@
 <div align="center">
 
 <!-- search for "github release" -->
-[![PyPI Version](https://img.shields.io/pypi/v/innov8finance.svg)](https://pypi.org/project/innov8finance/)
+[![PyPI Version](https://img.shields.io/pypi/v/innov8.svg)](https://pypi.org/project/innov8/)
 ![GitHub release (with filter)](https://img.shields.io/github/v/release/mayushii21/market-dashboard?style=flat-square)
 ![Static Badge](https://img.shields.io/badge/status-beta-yellow?style=flat-square)
 [![black autoformatter](https://img.shields.io/badge/code_style-black-000000)](https://github.com/psf/black)
@@ -44,7 +44,7 @@ The online version of the tool can be accessed at <http://innov8finance.pythonan
 It is highly recommended to install a local version for optimal performance and faster rendering. **innov8finance** requires Python to run. The latest version can be downloaded and installed from [https://www.python.org](https://www.python.org/downloads/). The package is available on PyPI and can be easily installed using pip:
 
 ```bash
-pip install innov8finance
+pip install innov8
 ```
 
 Once the installation is complete, you can run the tool from your terminal with a simple command:
@@ -88,7 +88,8 @@ The following diagram presents a simplified call graph:
     <img src="doc/simplified_call_graph.svg">
 </div>
 
-Note that callbacks are not depicted in the call graphs since they are not explicitly called in the code, but are implicitly triggered and executed by the Dash `app` when the `Input` to a callback function changes. When a user interacts with a Dash component, it triggers the associated callback function to run. Dash captures the input values from the components and provides them as arguments to the callback function. The callback function then performs the necessary computations or updates based on the input values and returns the updated output values.  
+Note that callbacks are not depicted in the call graphs since they are not explicitly called in the code, but are implicitly triggered and executed by the Dash `app` when the `Input` to a callback function changes. When a user interacts with a Dash component, it triggers the associated callback function to run. Dash captures the input values from the components and provides them as arguments to the callback function. The callback function then performs the necessary computations or updates based on the input values and returns the updated output values.
+
 The following Dash callback graph displays a visual representation of the callbacks: which order they are fired in, how long they take, and what data is passed back and forth.
 
 <div align="center">
