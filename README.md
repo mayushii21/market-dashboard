@@ -9,9 +9,7 @@
 
 <div align="center">
 
-<!-- search for "github release" -->
 [![PyPI Version](https://img.shields.io/pypi/v/innov8.svg)](https://pypi.org/project/innov8/)
-![GitHub release (with filter)](https://img.shields.io/github/v/release/mayushii21/market-dashboard?style=flat-square)
 ![Static Badge](https://img.shields.io/badge/status-beta-yellow?style=flat-square)
 [![black autoformatter](https://img.shields.io/badge/code_style-black-000000)](https://github.com/psf/black)
 [![CodeFactor](https://www.codefactor.io/repository/github/mayushii21/market-dashboard/badge?style=flat-square)](https://www.codefactor.io/repository/github/mayushii21/market-dashboard)
@@ -41,7 +39,7 @@ This project is intended for research and educational purposes only.
 
 The online version of the tool can be accessed at <http://innov8finance.pythonanywhere.com> or its backup at <https://innov8.onrender.com> (note that the web server on the backup link may take a few minutes to load since it automatically spins down after 15 minutes of inactivity and needs to be reawakened).
 
-It is highly recommended to install a local version for optimal performance and faster rendering. **innov8finance** requires Python to run. The latest version can be downloaded and installed from [https://www.python.org](https://www.python.org/downloads/). The package is available on PyPI and can be easily installed using pip:
+It is highly recommended to install a local version for optimal performance and faster rendering. **innov8finance** requires Python to run. The latest version can be downloaded and installed from [https://www.python.org](https://www.python.org/downloads/). The package is available on [PyPI](https://pypi.org/project/innov8/) and can be easily installed using pip:
 
 ```bash
 pip install innov8
