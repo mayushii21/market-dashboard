@@ -2,6 +2,7 @@ import dash_bootstrap_components as dbc
 from dash import dcc
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
+from tqdm import tqdm
 
 from innov8.components.decorators import callback, data_access
 
@@ -55,14 +56,18 @@ def update_ticker_data(data, button, scope, symbol, sector_symbols, sector, up_t
         raise PreventUpdate
     # Add new data for the chosen scope and update the update-state
     if scope == "Ticker":
+        print(f"Updating {symbol}...", end=" ", flush=True)
         data.add_new_ohlc(symbol)
         up_to_date[symbol] = True
+        print("success ✓")
     elif scope == "Sector":
-        for symbol in sector_symbols:
+        print("Updating sector...")
+        for symbol in tqdm(sector_symbols):
             data.add_new_ohlc(symbol)
         up_to_date[sector] = True
     else:
-        for symbol in data.main_table.symbol.unique():
+        print("Updating all...")
+        for symbol in tqdm(data.main_table.symbol.unique()):
             data.add_new_ohlc(symbol)
         up_to_date["All"] = True
     # Reload the main_table
