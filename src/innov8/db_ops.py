@@ -226,7 +226,7 @@ class DataStore:
                 )[["Open", "High", "Low", "Close", "Volume"]]
                 # Convert the date to a unix timestamp (remove timezone holding local time representations)
                 ohlc_data.index = (
-                    ohlc_data.index.tz_localize(None).astype("int") / 10**9
+                    ohlc_data.index.tz_localize(None).astype("int64") / 10**9
                 )
                 ohlc_data.reset_index(inplace=True)
                 # Convert to a list of dictionaries (records)
@@ -327,11 +327,13 @@ class DataStore:
                 (symbol,),
             ).fetchone()[0]
             # Retrieve new OHLC data for symbol
-            ohlc_data = self.tickers.tickers[symbol].history(start=latest_entry)[
-                ["Open", "High", "Low", "Close", "Volume"]
-            ]
+            ohlc_data = self.tickers.tickers[symbol].history(
+                start=latest_entry, raise_errors=True
+            )[["Open", "High", "Low", "Close", "Volume"]]
             # Convert the date to a unix timestamp (remove timezone holding local time representations)
-            ohlc_data.index = ohlc_data.index.tz_localize(None).astype("int") / 10**9
+            ohlc_data.index = (
+                ohlc_data.index.tz_localize(None).astype("int64") / 10**9
+            )
             ohlc_data.reset_index(inplace=True)
             # Convert to a list of dictionaries (records)
             ohlc_data = ohlc_data.to_dict(orient="records")
@@ -379,10 +381,10 @@ class DataStore:
                     """,
                     ohlc_data,
                 )
-                print(f"Successfully updated {symbol}")
+                # print(f"Successfully updated {symbol}")
         except Exception as e:
-            print(f"[{symbol}] Exception: {e}")
-            # pass
+            # print(f"[{symbol}] Exception: {e}")
+            pass
 
 
 data = DataStore()
@@ -409,7 +411,7 @@ else:
 
 data.load_main_table()
 
-print("Successfully established DB connection")
+# print("Successfully established DB connection")
 
 # con.commit()
 # con.close()
