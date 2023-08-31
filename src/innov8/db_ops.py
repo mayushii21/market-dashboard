@@ -226,7 +226,7 @@ class DataStore:
                 )[["Open", "High", "Low", "Close", "Volume"]]
                 # Convert the date to a unix timestamp (remove timezone holding local time representations)
                 ohlc_data.index = (
-                    ohlc_data.index.tz_localize(None).astype("int") / 10**9
+                    ohlc_data.index.tz_localize(None).astype("int64") / 10**9
                 )
                 ohlc_data.reset_index(inplace=True)
                 # Convert to a list of dictionaries (records)
@@ -331,7 +331,9 @@ class DataStore:
                 ["Open", "High", "Low", "Close", "Volume"]
             ]
             # Convert the date to a unix timestamp (remove timezone holding local time representations)
-            ohlc_data.index = ohlc_data.index.tz_localize(None).astype("int") / 10**9
+            ohlc_data.index = (
+                ohlc_data.index.tz_localize(None).astype("int64") / 10**9
+            )
             ohlc_data.reset_index(inplace=True)
             # Convert to a list of dictionaries (records)
             ohlc_data = ohlc_data.to_dict(orient="records")
