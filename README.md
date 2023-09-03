@@ -1,6 +1,6 @@
 <!-- better use an svg -->
 <div align="center">
-    <img src="doc/pixel_neko.png">
+    <img src="doc/collage.png">
 </div>
 
 -------
