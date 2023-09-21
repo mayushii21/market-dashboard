@@ -1,6 +1,6 @@
 [project]
 name = "innov8"
-version = "0.0.7-beta"
+version = "0.0.8-beta"
 description = "an interactive market dashboard"
 authors = [
     {name = "mayushii21", email = "122178787+mayushii21@users.noreply.github.com"},
@@ -19,7 +19,7 @@ dependencies = [
 ]
 requires-python = ">=3.8"
 readme = "README.md"
-license = {text = "BSD-3-Clause license"}
+license = {text = "BSD-3-Clause"}
 
 [build-system]
 requires = ["pdm-backend"]
