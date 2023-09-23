@@ -22,7 +22,7 @@
 > LEGAL DISCLAIMER  
 This project is intended for research and educational purposes only.
 
-## Main features
+## Main Features
 
 - **Full List of S&P 500 Component Stocks:** Access data for stocks from some of the largest companies in the United States.
 - **Economic Sector Filtering:** Easily filter stocks by economic sector.
