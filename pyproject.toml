@@ -32,3 +32,8 @@ innov8 = 'innov8.run:main'
 Homepage = "http://innov8finance.pythonanywhere.com/"
 Repository = "https://github.com/mayushii21/market-dashboard"
 "Bug Tracker" = "https://github.com/mayushii21/market-dashboard/issues"
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+]
