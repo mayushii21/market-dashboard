@@ -32,11 +32,7 @@ class DataStore:
         JOIN ticker_type tt ON t.ticker_type_id = tt.id
     """
 
-    def __init__(self):
-        # Get the absolute path of the directory containing the script
-        script_directory = Path(__file__).resolve().parent
-        # Construct the absolute path to the database file
-        database_path = script_directory / "stonks.db"
+    def __init__(self, database_path):
         # Connect to the database using the absolute path
         self.con = sqlite3.connect(database_path, check_same_thread=False)
         self.cur = self.con.cursor()
@@ -387,7 +383,11 @@ class DataStore:
             pass
 
 
-data = DataStore()
+# Get the absolute path of the directory containing the script
+script_directory = Path(__file__).resolve().parent
+# Construct the absolute path to the database file
+database_path = script_directory / "stonks.db"
+data = DataStore(database_path)
 
 # Check if the database is populated by checking if the price table is present
 if not data.cur.execute(
