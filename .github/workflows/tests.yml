@@ -1,9 +1,11 @@
 name: Run Python tests with Pytest
 
 on:
-  # Triggers the workflow on a push event but only for the development branch
+  # Triggers the workflow on a push event for the development and main branches
   push:
-    branches: [development]
+    branches:
+      - development
+      - main
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -40,7 +42,7 @@ jobs:
           emoji: false
           verbose: true
           job-summary: true
-          custom-arguments: "--cov"
+          custom-arguments: "--cov innov8"
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
