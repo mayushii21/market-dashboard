@@ -34,12 +34,13 @@ jobs:
           python -m pip install --upgrade pytest pytest-md pytest-emoji
           pip install .
 
-      - name: Perform tests
+      - name: Perform tests and collect coverage
         uses: pavelzw/pytest-action@v2
         with:
           emoji: false
-          verbose: false
+          verbose: true
           job-summary: true
+          custom-arguments: "--cov"
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
