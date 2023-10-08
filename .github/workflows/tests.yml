@@ -1,4 +1,4 @@
-name: Run Python tests with Pytest
+name: tests
 
 on:
   # Triggers the workflow on a push event for the development and main branches
