@@ -1,0 +1,45 @@
+name: Run Python tests with Pytest
+
+on:
+  # Triggers the workflow on a push event but only for the development branch
+  push:
+    branches: [development]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  # This workflow contains a single job with a job_id "build"
+  build:
+    name: Run tests
+
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Using multiple Python versions
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.x"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pytest pytest-md pytest-emoji
+
+      - name: Perform tests
+        uses: pavelzw/pytest-action@v2
+        with:
+          emoji: false
+          verbose: false
+          job-summary: true
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
