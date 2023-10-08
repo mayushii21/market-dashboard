@@ -10,10 +10,12 @@
 <div align="center">
 
 [![PyPI Version](https://img.shields.io/pypi/v/innov8.svg)](https://pypi.org/project/innov8/)
-![Static Badge](https://img.shields.io/badge/status-beta-yellow?style=flat-square)
+![Static Badge](https://img.shields.io/badge/status-beta-yellow)
+[![CodeFactor](https://www.codefactor.io/repository/github/mayushii21/market-dashboard/badge)](https://www.codefactor.io/repository/github/mayushii21/market-dashboard)
+[![CI - Test](https://github.com/mayushii21/market-dashboard/actions/workflows/tests.yml/badge.svg)](https://github.com/mayushii21/market-dashboard/actions/workflows/tests.yml)
+[![codecov](https://codecov.io/gh/mayushii21/market-dashboard/graph/badge.svg?token=8T9S4OMWYT)](https://codecov.io/gh/mayushii21/market-dashboard)
 [![black autoformatter](https://img.shields.io/badge/code_style-black-000000)](https://github.com/psf/black)
-[![CodeFactor](https://www.codefactor.io/repository/github/mayushii21/market-dashboard/badge?style=flat-square)](https://www.codefactor.io/repository/github/mayushii21/market-dashboard)
-[![License](https://img.shields.io/github/license/mayushii21/market-dashboard?style=flat-square)](LICENSE)
+[![License](https://img.shields.io/github/license/mayushii21/market-dashboard)](LICENSE)
 
 </div>
 
@@ -22,7 +24,7 @@
 > LEGAL DISCLAIMER  
 This project is intended for research and educational purposes only.
 
-## Main features
+## Main Features
 
 - **Full List of S&P 500 Component Stocks:** Access data for stocks from some of the largest companies in the United States.
 - **Economic Sector Filtering:** Easily filter stocks by economic sector.

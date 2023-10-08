@@ -11,11 +11,5 @@ def data_access(func):
     return inner
 
 
-# Convenience wrapper around app.callback
-def callback(*args, **kwargs):
-    def decorator(callback_func):
-        # Apply the app.callback() function call with the provided arguments
-        app.callback(*args, **kwargs)(callback_func)
-
-    # Return the decorator
-    return decorator
+# For convenience
+callback = app.callback
