@@ -72,7 +72,7 @@ def table_info():
                 ],
                 style_header={"backgroundColor": "rgba(0,0,0,0)"},
                 style_data={"backgroundColor": "rgba(0,0,0,0)"},
-                style_table={"height": "100px", "overflowY": "auto"},
+                style_table={"height": "180px", "overflowY": "auto"},
                 style_as_list_view=True,
             ),
         ]
