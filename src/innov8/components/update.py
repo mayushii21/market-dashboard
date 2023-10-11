@@ -26,10 +26,17 @@ def update_button():
                 options=["Ticker", "Sector", "All"],
                 value="Ticker",
                 id="update-dropdown",
-                style={"width": "8vw", "height": "37px"},
+                style={
+                    "width": "70%",
+                    "height": "37px",
+                    "border-top-left-radius": 0,  # squarify :]
+                    "border-bottom-left-radius": 0,
+                },
                 clearable=False,
             ),
-        ]
+        ],
+        # style={"padding-left": "4em", "margin-left": "auto", "margin-right": 0},
+        style={"width": "100%"},
     )
 
 

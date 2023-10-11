@@ -14,7 +14,7 @@ from innov8.components.update import update_button, update_state
 # Pool (combine) the layout
 app.layout = dbc.Container(
     [
-        # A carousel for 10 tickers with the largest absolute change occupies the topmost row
+        # A carousel for 10 tickers with the largest absolute change occupying the topmost row
         dbc.Row([dbc.Col([carousel()], width=12)]),
         dbc.Row(
             [
@@ -33,7 +33,7 @@ app.layout = dbc.Container(
                                             type="dot",
                                         )
                                     ],
-                                    width=3,
+                                    width={"size": 3, "offset": 1},
                                 ),
                             ],
                             class_name="mb-1",

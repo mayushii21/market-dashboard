@@ -9,11 +9,11 @@ def price_card():
     return html.Div(
         [
             # Symbol
-            html.H4(
+            html.H2(
                 id="ticker-symbol",
                 style={
                     "textAlign": "left",
-                    "marginTop": 10,
+                    "marginTop": 0,
                     "marginBottom": -7,
                 },
             ),
@@ -21,7 +21,7 @@ def price_card():
             html.P(
                 id="ticker-name",
                 style={
-                    "fontSize": "12px",
+                    "fontSize": "14px",
                     "textAlign": "left",
                     "marginBottom": -7,
                 },
@@ -30,7 +30,7 @@ def price_card():
             html.P(
                 id="ticker-price",
                 style={
-                    "fontSize": "27px",
+                    "fontSize": "33px",
                     "textAlign": "right",
                     "marginBottom": -7,
                 },
@@ -44,7 +44,7 @@ def price_card():
                 id="exchange-name",
                 style={
                     "textAlign": "left",
-                    "fontSize": "14px",
+                    "fontSize": "19px",
                     "marginBottom": -3,
                 },
             ),
@@ -53,12 +53,12 @@ def price_card():
                 id="economic-sector",
                 style={
                     "textAlign": "left",
-                    "fontSize": "14px",
+                    "fontSize": "19px",
                 },
             ),
         ],
         id="ticker-data",
-        style={"height": "140px"},
+        style={"height": "190px"},
     )
 
 
@@ -89,7 +89,7 @@ def update_symbol_data(data, symbol, update):
         f"{current_price:.2f} ({ticker.iat[0, 4]})",  # (currency)
         f"{'+' if change > 0 else ''}{change:.2%}",
         {
-            "fontSize": "14px",
+            "fontSize": "17px",
             "textAlign": "right",
             "marginBottom": -3,
             "color": "green" if change > 0 else "red",
