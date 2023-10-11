@@ -178,6 +178,7 @@ def update_price_chart(data, symbol, ema, sma, ema_period, sma_period, theme, up
             showgrid=False,
             # tickprefix="$"
         ),
+        height=600,
     )
 
     def plot_line(indicator):
