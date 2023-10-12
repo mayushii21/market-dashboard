@@ -27,7 +27,7 @@ def test_carousel_52_week():
     carousel_data = carousel_52_week()
     # Check that the settings are correct
     assert carousel_data.autoplay is True
-    assert carousel_data.speed == 3000
+    assert carousel_data.speed == 4000
     assert carousel_data.slides_to_show == 1
     # Verify that the carousel contains proper components
     assert carousel_data.children[0].id == "52-week-price-chart"
