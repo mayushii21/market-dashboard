@@ -51,9 +51,14 @@ def calculate_table_data(data, sector, update):
 def table_info():
     return html.Div(
         [
-            html.Label(
+            html.P(
                 "Intra-sector Data Table",
-                style={"textAlign": "center", "display": "block"},
+                style={
+                    "textAlign": "center",
+                    "display": "block",
+                    "marginBottom": "0.5em",
+                    "fontSize": "1.2em",
+                },
             ),
             dash_table.DataTable(
                 id="correlation-table",
@@ -72,7 +77,11 @@ def table_info():
                 ],
                 style_header={"backgroundColor": "rgba(0,0,0,0)"},
                 style_data={"backgroundColor": "rgba(0,0,0,0)"},
-                style_table={"height": "180px", "overflowY": "auto"},
+                style_table={
+                    # "height": "calc(100vh)",
+                    "height": "calc(100vh - 2em - (10.6em * 1.5) - 1.7em - 300px)",
+                    "overflowY": "auto",
+                },
                 style_as_list_view=True,
             ),
         ]

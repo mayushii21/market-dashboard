@@ -5,23 +5,25 @@ from innov8.components.decorators import callback, data_access
 
 
 # div with main ticker information
+# Height = 10.6em - 27px
 def price_card():
     return html.Div(
         [
             # Symbol
-            html.H2(
+            html.P(
                 id="ticker-symbol",
                 style={
                     "textAlign": "left",
                     "marginTop": 0,
                     "marginBottom": -7,
+                    "fontSize": "3em",
                 },
             ),
             # Name
             html.P(
                 id="ticker-name",
                 style={
-                    "fontSize": "14px",
+                    "fontSize": "1em",
                     "textAlign": "left",
                     "marginBottom": -7,
                 },
@@ -30,7 +32,7 @@ def price_card():
             html.P(
                 id="ticker-price",
                 style={
-                    "fontSize": "33px",
+                    "fontSize": "2.3em",
                     "textAlign": "right",
                     "marginBottom": -7,
                 },
@@ -44,7 +46,7 @@ def price_card():
                 id="exchange-name",
                 style={
                     "textAlign": "left",
-                    "fontSize": "19px",
+                    "fontSize": "1.3em",
                     "marginBottom": -3,
                 },
             ),
@@ -53,12 +55,12 @@ def price_card():
                 id="economic-sector",
                 style={
                     "textAlign": "left",
-                    "fontSize": "19px",
+                    "fontSize": "1.3em",
+                    "marginBottom": "0.5em",
                 },
             ),
         ],
         id="ticker-data",
-        style={"height": "190px"},
     )
 
 
@@ -89,7 +91,7 @@ def update_symbol_data(data, symbol, update):
         f"{current_price:.2f} ({ticker.iat[0, 4]})",  # (currency)
         f"{'+' if change > 0 else ''}{change:.2%}",
         {
-            "fontSize": "17px",
+            "fontSize": "1.2em",
             "textAlign": "right",
             "marginBottom": -3,
             "color": "green" if change > 0 else "red",

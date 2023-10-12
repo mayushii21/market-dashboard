@@ -13,7 +13,9 @@ from innov8.components.decorators import callback, data_access
 
 # The price (candlestick) chart
 def price_chart():
-    return dcc.Graph(id="price-chart")
+    return dcc.Graph(
+        id="price-chart", responsive=True, style={"height": "calc(100vh - 2em - 83px)"}
+    )
 
 
 # EMA switch with selectable period
@@ -178,7 +180,6 @@ def update_price_chart(data, symbol, ema, sma, ema_period, sma_period, theme, up
             showgrid=False,
             # tickprefix="$"
         ),
-        height=600,
     )
 
     def plot_line(indicator):

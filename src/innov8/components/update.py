@@ -29,8 +29,8 @@ def update_button():
                 style={
                     "width": "70%",
                     "height": "37px",
-                    "border-top-left-radius": 0,  # squarify :]
-                    "border-bottom-left-radius": 0,
+                    "borderTopLeftRadius": 0,  # squarify :]
+                    "borderBottomLeftRadius": 0,
                 },
                 clearable=False,
             ),
@@ -59,20 +59,20 @@ def update_state():
 @data_access
 def update_ticker_data(data, button, scope, symbol, sector_symbols, sector, up_to_date):
     # Prevent the initial callback to avoid updating the store for nothing
-    if button is None:
-        raise PreventUpdate
+    # if button is None:
+    #     raise PreventUpdate
     # Add new data for the chosen scope and update the update-state
-    if scope == "Ticker":
+    if button and scope == "Ticker":
         print(f"Updating {symbol}...", end=" ", flush=True)
         data.add_new_ohlc(symbol)
         up_to_date[symbol] = True
         print("success ✓")
-    elif scope == "Sector":
+    elif button and scope == "Sector":
         print("Updating sector...")
         for symbol in tqdm(sector_symbols):
             data.add_new_ohlc(symbol)
         up_to_date[sector] = True
-    else:
+    elif button:
         print("Updating all...")
         for symbol in tqdm(data.main_table.symbol.unique()):
             data.add_new_ohlc(symbol)

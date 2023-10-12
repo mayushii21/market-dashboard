@@ -15,13 +15,9 @@ def carousel_52_week():
             dcc.Graph(id="52-week-high-low-indicator"),
         ],
         slides_to_show=1,
-        vertical=True,
         autoplay=True,
-        speed=3000,
-        style={
-            "height": 280,
-            "width": 357,
-        },
+        speed=4000,
+        style={"height": 300, "width": 370, "paddingBottom": "6px"},
         responsive=[
             {"breakpoint": 9999, "settings": {"arrows": False}},
         ],
@@ -67,8 +63,8 @@ def update_52_week_charts(data, symbol, theme, update):
         font_size=9,
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
-        height=280,
-        width=357,
+        height=300,
+        width=370,
         margin=dict(l=1, r=1, b=0, t=0),
         showlegend=False,
     )
@@ -143,8 +139,8 @@ def update_52_week_charts(data, symbol, theme, update):
         font_size=9,
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
-        height=280,
-        width=357,
+        height=300,
+        width=370,
         margin=dict(l=1, r=1, b=0, t=0),
         showlegend=False,
     )
