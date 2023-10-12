@@ -18,7 +18,7 @@ app.layout = dbc.Container(
         dbc.Row([dbc.Col([carousel()], width=12)]),
         dbc.Row(
             [
-                # This first column occupies 75% of the dashboard's width
+                # This first column occupies all available width - 370px (for the second column)
                 dbc.Col(
                     [
                         # This row holds the dropdowns responsible for sector and ticker selection and the update button
@@ -57,9 +57,10 @@ app.layout = dbc.Container(
                             class_name="mb-1",
                         ),
                     ],
-                    width=9,
+                    width=9,  # investigate why this is needed later
+                    style={"width": "calc(100% - 370px)"},
                 ),
-                # This column occupies 25% of the dashboard's width
+                # This column occupies 370px of the dashboard's width
                 dbc.Col(
                     [
                         dbc.Row([dbc.Col([price_card()], width=12)]),
@@ -73,7 +74,8 @@ app.layout = dbc.Container(
                             ],
                         ),
                     ],
-                    width=3,
+                    width=3,  # -''-
+                    style={"width": "370px"},
                 ),
             ],
             class_name="g-0",  # remove gutters
