@@ -6,7 +6,7 @@ authors = [
     {name = "mayushii21", email = "122178787+mayushii21@users.noreply.github.com"},
 ]
 dependencies = [
-    "dash==2.12.1",
+    "dash[diskcache]==2.16.1",
     "dash-bootstrap-components",
     "dash-bootstrap-templates",
     "dash-trich-components",
@@ -16,8 +16,9 @@ dependencies = [
     "pandas",
     "yfinance",
     "tqdm",
+    "python-dotenv>=1.0.1",
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 readme = "README.md"
 license = {text = "BSD-3-Clause"}
 
@@ -37,3 +38,4 @@ Repository = "https://github.com/mayushii21/market-dashboard"
 addopts = [
     "--import-mode=importlib",
 ]
+[tool.pdm]
