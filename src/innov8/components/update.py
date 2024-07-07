@@ -55,6 +55,7 @@ def update_state():
     State("symbol-dropdown", "options"),
     State("sector-dropdown", "value"),
     State("update-state", "data"),
+    background=True,
 )
 @data_access
 def update_ticker_data(data, button, scope, symbol, sector_symbols, sector, up_to_date):
