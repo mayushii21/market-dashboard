@@ -28,7 +28,7 @@ requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
 [project.scripts]
-innov8 = 'innov8.run:main'
+innov8 = 'innov8.run:cli'
 
 [project.urls]
 Homepage = "http://innov8finance.pythonanywhere.com/"
