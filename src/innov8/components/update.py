@@ -58,7 +58,7 @@ def update_state() -> dcc.Store:
     State("symbol-dropdown", "options"),
     State("sector-dropdown", "value"),
     State("update-state", "data"),
-    background=True,
+    # background=True,
 )
 @data_access
 def update_ticker_data(
@@ -79,9 +79,6 @@ def update_ticker_data(
         up_to_date[sector] = True
     else:
         update_all.main()
-        # logger.info("Updating all...")
-        # for symbol in tqdm(data.main_table.symbol.unique()):
-        #     data.add_new_ohlc(symbol)
         up_to_date["All"] = True
     # Reload the main_table
     data.load_main_table()
