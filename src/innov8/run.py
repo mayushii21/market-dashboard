@@ -39,7 +39,7 @@ def main() -> None:
         app.run(debug=True, threaded=True)
     else:
         logger.configure(handlers=[{"sink": sys.stderr, "level": "ERROR"}])
-        app.run_server(debug=False, threaded=True)
+        app.run(debug=False, threaded=True)
 
 
 if __name__ == "__main__":
