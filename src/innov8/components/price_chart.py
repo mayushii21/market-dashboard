@@ -1,23 +1,33 @@
-import datetime
-
 import dash_bootstrap_components as dbc
-import plotly.graph_objects as go
-from dash import Patch, callback_context, dcc
+import dash_tvlwc
+import plotly
+from dash import Patch, callback_context
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from dash_bootstrap_templates import ThemeChangerAIO, template_from_url
-from plotly.subplots import make_subplots
 
 from innov8.components.decorators import callback, data_access
 
 
+def hex_to_rgba(hex_color, alpha=1.0) -> str:
+    # Convert hex color to RGBA, handling both three and six character hex codes
+    hex_color = hex_color.lstrip("#")
+    if len(hex_color) == 3:
+        hex_color = "".join([2 * char for char in hex_color])
+    return f"rgba({int(hex_color[0:2], 16)}, {int(hex_color[2:4], 16)}, {int(hex_color[4:6], 16)}, {alpha})"
+
+
+GREEN = "#079A80"
+RED = "#F23645"
+OPACITY = 0.5
+
+
 # The price (candlestick) chart
 def price_chart():
-    return dcc.Graph(
-        id="price-chart",
-        config={"modeBarButtonsToRemove": ["select2d", "lasso2d", "zoom"]},
-        responsive=True,
-        style={"height": "calc(100vh - 2em - 83px)"},
+    return dash_tvlwc.Tvlwc(
+        id="tv-price-chart",
+        height="calc(100vh - 2em - 83px)",
+        width="100%",
     )
 
 
@@ -32,6 +42,7 @@ def ema_switch():
                     "display": "flex",
                     "justifyContent": "center",
                     "alignItems": "center",
+                    "borderRadius": "0",
                 },
                 class_name="btn btn-outline-secondary",
             ),
@@ -44,7 +55,7 @@ def ema_switch():
                 step=1,
                 value=9,
                 persistence=True,
-                style={"paddingLeft": 10},
+                style={"paddingLeft": 10, "borderRadius": "0"},
             ),
         ],
     )
@@ -61,6 +72,7 @@ def sma_switch():
                     "display": "flex",
                     "justifyContent": "center",
                     "alignItems": "center",
+                    "borderRadius": "0",
                 },
                 class_name="btn btn-outline-secondary",
             ),
@@ -73,7 +85,7 @@ def sma_switch():
                 step=1,
                 value=50,
                 persistence=True,
-                style={"paddingLeft": 10},
+                style={"paddingLeft": 10, "borderRadius": "0"},
             ),
         ],
     )
@@ -81,7 +93,10 @@ def sma_switch():
 
 # Update price chart (with indicators)
 @callback(
-    Output("price-chart", "figure"),
+    Output("tv-price-chart", "seriesTypes"),
+    Output("tv-price-chart", "seriesData"),
+    Output("tv-price-chart", "seriesOptions"),
+    Output("tv-price-chart", "chartOptions"),
     Input("symbol-dropdown", "value"),
     Input("ema", "value"),
     Input("sma", "value"),
@@ -94,113 +109,69 @@ def sma_switch():
 def update_price_chart(data, symbol, ema, sma, ema_period, sma_period, theme, update):
     # Filter data by ticker symbol
     ticker = data.main_table[data.main_table.symbol == symbol].set_index("date")
-    green = "#079A80"
-    red = "#F23645"
+
     # Add color for plotting
-    ticker["color"] = green
-    ticker["color"] = ticker.color.where(ticker["close"] > ticker["open"], red).astype(
-        "category"
-    )
+    ticker["color"] = hex_to_rgba(GREEN, OPACITY)
+    ticker["color"] = ticker.color.where(
+        ticker["close"] > ticker["open"], hex_to_rgba(RED, OPACITY)
+    ).astype("category")
     # Each indicator will have its own color in the chart
     colors = {"SMA": "#1c90d4", "EMA": "#ad0026"}
 
-    # Create figure with secondary y-axis (for the Volume chart)
-    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    # Plot candlesticks (price) and bar chart (volume)
+    seriesTypes = ["candlestick", "histogram"]
+    seriesData = [
+        ticker[["open", "high", "low", "close"]]
+        .reset_index(names="time")
+        .to_dict("records"),
+        ticker[["volume", "color"]]
+        .reset_index(names="time")
+        .rename(columns={"volume": "value"})
+        .to_dict("records"),
+    ]
+    seriesOptions = [
+        {
+            "silent-title": "Price",
+            "upColor": hex_to_rgba(GREEN, OPACITY),
+            "downColor": hex_to_rgba(RED, OPACITY),
+            "borderUpColor": GREEN,
+            "borderDownColor": RED,
+            "wickUpColor": GREEN,
+            "wickDownColor": RED,
+        },
+        {
+            "silent-title": "Volume",
+            # "color": "#e303fc",
+            "priceFormat": {"type": "volume"},
+            "priceScaleId": "",
+            "scaleMargins": {"top": 0.89, "bottom": 0},
+            # "priceLineVisible": False,
+        },
+    ]
 
-    # Plot candlesticks (price)
-    fig.add_trace(
-        go.Candlestick(
-            x=ticker.index,
-            open=ticker.open,
-            high=ticker.high,
-            low=ticker.low,
-            close=ticker.close,
-            name="Price",
-            increasing_line_color=green,
-            decreasing_line_color=red,
-        ),
-        secondary_y=True,
-    )
+    theme_name = template_from_url(theme)
 
-    # Plot bar chart (volume)
-    fig.add_trace(
-        go.Bar(
-            x=ticker.index,
-            y=ticker.volume,
-            name="Volume",
-            marker_color=ticker.color,
-            marker_opacity=0.5,
-        ),
-        secondary_y=False,
-    )
-
-    # Select latest date for specifying default range
-    latest_date = ticker.index[-1]
-    fig.update_layout(
-        template=template_from_url(theme),
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        margin=dict(l=0, r=0, b=7, t=7),
-        showlegend=False,
-        hovermode="x unified",
-        xaxis=dict(
-            showgrid=False,
-            range=[
-                latest_date - datetime.timedelta(180),
-                # ticker.index[-1] - relativedelta(months=6),
-                latest_date + datetime.timedelta(1),
-            ],  # default plot range - 180 days before latest update
-            rangeslider=dict(visible=True, bgcolor="rgba(0,0,0,0)"),
-            rangebreaks=[
-                dict(bounds=["sat", "mon"]),  # hide weekends
-                # dict(values=["2015-12-25", "2016-01-01"])  # hide Christmas and New Year's
-            ],
-            rangeselector=dict(
-                bgcolor="rgba(0,0,0,0)",
-                buttons=list(
-                    [
-                        dict(count=1, label="1M", step="month", stepmode="backward"),
-                        dict(count=3, label="3M", step="month", stepmode="backward"),
-                        dict(count=6, label="6M", step="month", stepmode="backward"),
-                        dict(count=1, label="YTD", step="year", stepmode="todate"),
-                        dict(count=1, label="1Y", step="year", stepmode="backward"),
-                        dict(step="all"),
-                    ]
-                ),
-            ),
-            # type="date",
-        ),
-        yaxis=dict(
-            visible=False,
-            showgrid=False,
-            range=[0, ticker.volume.max() * 4],
-            # scaleanchor="y2",
-            # scaleratio=0.0000001,
-            # constraintoward="bottom",
-            rangemode="tozero",
-        ),
-        yaxis2=dict(
-            showgrid=False,
-            # tickprefix="$"
-        ),
-        dragmode="pan",
-    )
+    template = plotly.io.templates[theme_name]
+    text_color = template["layout"]["font"]["color"]
+    # bg_color = template["layout"]["plot_bgcolor"]
+    grid_color = template["layout"]["scene"]["xaxis"]["gridcolor"]
 
     def plot_line(indicator):
-        # Plot indicator
-        fig.add_trace(
-            go.Scatter(
-                x=ticker.index,
-                y=ticker[indicator],
-                name=indicator,
-                mode="lines",
-                line={
-                    "color": colors[indicator],
-                    "width": 3,
-                },
-                opacity=0.7,
-            ),
-            secondary_y=True,
+        # Plot indicator line
+        seriesTypes.append("line")
+        seriesData.append(
+            ticker[[indicator]]
+            .reset_index(names="time")
+            .rename(columns={indicator: "value"})
+            .dropna()
+            .to_dict("records")
+        )
+        seriesOptions.append(
+            {
+                "silent-title": indicator,
+                "lineWidth": 3,
+                "color": hex_to_rgba(colors[indicator], 0.7),
+            }
         )
 
     # Empty list check
@@ -215,13 +186,40 @@ def update_price_chart(data, symbol, ema, sma, ema_period, sma_period, theme, up
         ticker["SMA"] = ticker["close"].rolling(window=sma_period).mean()
         plot_line("SMA")
 
-    return fig
+    return (
+        seriesTypes,
+        seriesData,
+        seriesOptions,
+        {
+            "watermark": {
+                "visible": True,
+                "text": "mayushii21",
+                "color": hex_to_rgba(text_color, 0.3),
+                "fontFamily": "Consolas, monospace, Roboto, Ubuntu, sans-serif, 'Trebuchet MS'",
+                "fontSize": 72,
+            },
+            "layout": {
+                # "textColor": "#ff80cc",
+                "textColor": text_color,
+                "background": {"type": "solid", "color": "rgba(0, 0, 0, 0)"},
+            },
+            "grid": {
+                "vertLines": {
+                    "color": hex_to_rgba(grid_color, 0.3),
+                },
+                "horzLines": {
+                    "color": hex_to_rgba(grid_color, 0.3),
+                },
+            },
+            "timeScale": {"borderColor": grid_color},
+        },
+    )
 
 
 # Update indicators using partial property assignment
 @callback(
-    Output("price-chart", "figure", allow_duplicate=True),
-    State("price-chart", "figure"),
+    Output("tv-price-chart", "seriesData", allow_duplicate=True),
+    State("tv-price-chart", "seriesOptions"),
     State("symbol-dropdown", "value"),
     State("ema", "value"),
     State("sma", "value"),
@@ -230,26 +228,42 @@ def update_price_chart(data, symbol, ema, sma, ema_period, sma_period, theme, up
     prevent_initial_call=True,
 )
 @data_access
-def update_indicator_period(data, fig, symbol, ema, sma, ema_period, sma_period):
+def update_indicator_period(
+    data, seriesOptions, symbol, ema, sma, ema_period, sma_period
+) -> Patch:
     # Filter data by ticker symbol
     ticker = data.main_table[data.main_table.symbol == symbol].set_index("date")
     # If no indicator is selected - prevent update
     if not (ema or sma):
         raise PreventUpdate
     # Store subplot indexes for accessing appropriate data
-    fig_index = {fig["data"][i]["name"]: i for i in range(len(fig["data"]))}
+    tv_indicator_index = {
+        seriesOptions[i]["silent-title"]: i for i in range(len(seriesOptions))
+    }
     # Creating a Patch object
-    patched_figure = Patch()
+    patched_seriesData = Patch()
     # Update partial property (y data for indicator)
     if callback_context.triggered_id == "ema-period" and ema:
-        patched_figure.data[fig_index[ema[0]]].y = (
+        ticker["EMA"] = (
             ticker["close"]
             .ewm(span=ema_period, min_periods=ema_period, adjust=False)
             .mean()
         )
+        patched_seriesData[tv_indicator_index[ema[0]]] = (
+            ticker[["EMA"]]
+            .reset_index(names="time")
+            .rename(columns={"EMA": "value"})
+            .dropna()
+            .to_dict("records")
+        )
     if callback_context.triggered_id == "sma-period" and sma:
-        patched_figure.data[fig_index[sma[0]]].y = (
-            ticker["close"].rolling(window=sma_period).mean()
+        ticker["SMA"] = ticker["close"].rolling(window=sma_period).mean()
+        patched_seriesData[tv_indicator_index[sma[0]]] = (
+            ticker[["SMA"]]
+            .reset_index(names="time")
+            .rename(columns={"SMA": "value"})
+            .dropna()
+            .to_dict("records")
         )
 
-    return patched_figure
+    return patched_seriesData
