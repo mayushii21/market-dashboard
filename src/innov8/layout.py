@@ -42,7 +42,7 @@ app.layout = dbc.Container(
                         dbc.Row(
                             [
                                 dbc.Col(
-                                    [dcc.Loading(price_chart(), type="circle")],
+                                    [price_chart()],
                                     width=12,
                                 ),
                             ],
@@ -51,9 +51,25 @@ app.layout = dbc.Container(
                         dbc.Row(
                             [
                                 dbc.Col(theme_changer, width=2),
-                                dbc.Col(ema_switch(), width={"size": 4, "offset": 1}),
+                                # dbc.Col(
+                                #     dbc.DropdownMenu(
+                                #         children=[
+                                #             ema_switch(),
+                                #             sma_switch(),
+                                #         ],
+                                #         label="Technical Indicators",
+                                #         id="indicators",
+                                #         direction="up",
+                                #         align_end=True,
+                                #         color="transparent",
+                                #         style={"height": "37px", "all": "unset"},
+                                #     ),
+                                #     width="auto",
+                                # ),
+                                dbc.Col(ema_switch(), width={"size": 4, "offset": 2}),
                                 dbc.Col(sma_switch(), width=4),
                             ],
+                            justify="between",
                             class_name="mb-1",
                         ),
                     ],
@@ -78,7 +94,7 @@ app.layout = dbc.Container(
                     style={"width": "370px"},
                 ),
             ],
-            class_name="g-0",  # remove gutters
+            # class_name="g-0",  # remove gutters
         ),
         intra_sector_data(),
     ],
