@@ -42,7 +42,7 @@ def ema_switch():
                     "display": "flex",
                     "justifyContent": "center",
                     "alignItems": "center",
-                    "borderRadius": "0",
+                    # "borderRadius": "0",
                 },
                 class_name="btn btn-outline-secondary",
             ),
@@ -55,7 +55,10 @@ def ema_switch():
                 step=1,
                 value=9,
                 persistence=True,
-                style={"paddingLeft": 10, "borderRadius": "0"},
+                style={
+                    "paddingLeft": 10,
+                    # "borderRadius": "0"
+                },
             ),
         ],
     )
@@ -72,7 +75,7 @@ def sma_switch():
                     "display": "flex",
                     "justifyContent": "center",
                     "alignItems": "center",
-                    "borderRadius": "0",
+                    # "borderRadius": "0",
                 },
                 class_name="btn btn-outline-secondary",
             ),
@@ -85,7 +88,10 @@ def sma_switch():
                 step=1,
                 value=50,
                 persistence=True,
-                style={"paddingLeft": 10, "borderRadius": "0"},
+                style={
+                    "paddingLeft": 10,
+                    # "borderRadius": "0"
+                },
             ),
         ],
     )
