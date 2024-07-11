@@ -1,14 +1,17 @@
+from typing import Any, Literal
+
 import dash_bootstrap_components as dbc
 from dash import dcc
 from dash.dependencies import Input, Output, State
-from dash.exceptions import PreventUpdate
+from loguru import logger
 from tqdm import tqdm
 
+from innov8 import update_all
 from innov8.components.decorators import callback, data_access
 
 
 # Button with scope dropdown
-def update_button():
+def update_button() -> dbc.ButtonGroup:
     return dbc.ButtonGroup(
         [
             dbc.Button(
@@ -16,7 +19,8 @@ def update_button():
                 outline=True,
                 style={
                     "height": "37px",
-                    "width": "140px",
+                    "width": "fit-content",
+                    "minWidth": "fit-content",
                     "display": "flex",
                     "justifyContent": "center",
                     "alignItems": "center",
@@ -27,7 +31,8 @@ def update_button():
                 value="Ticker",
                 id="update-dropdown",
                 style={
-                    "width": "70%",
+                    "width": "auto",
+                    "minWidth": "6em",
                     "height": "37px",
                     "borderTopLeftRadius": 0,  # squarify :]
                     "borderBottomLeftRadius": 0,
@@ -42,7 +47,7 @@ def update_button():
 
 # Store update state
 # Data with the session option will survive a page refresh but will be forgotten on page close
-def update_state():
+def update_state() -> dcc.Store:
     return dcc.Store(id="update-state", data={}, storage_type="session")
 
 
@@ -55,28 +60,27 @@ def update_state():
     State("symbol-dropdown", "options"),
     State("sector-dropdown", "value"),
     State("update-state", "data"),
+    # background=True,
 )
 @data_access
-def update_ticker_data(data, button, scope, symbol, sector_symbols, sector, up_to_date):
+def update_ticker_data(
+    data, button, scope, symbol, sector_symbols, sector, up_to_date
+) -> Any:
     # Prevent the initial callback to avoid updating the store for nothing
     if button is None:
         # raise PreventUpdate
         return up_to_date
     # Add new data for the chosen scope and update the update-state
     if scope == "Ticker":
-        print(f"Updating {symbol}...", end=" ", flush=True)
         data.add_new_ohlc(symbol)
         up_to_date[symbol] = True
-        print("success ✓")
     elif scope == "Sector":
-        print("Updating sector...")
+        logger.info("Updating sector {}...", sector)
         for symbol in tqdm(sector_symbols):
             data.add_new_ohlc(symbol)
         up_to_date[sector] = True
     else:
-        print("Updating all...")
-        for symbol in tqdm(data.main_table.symbol.unique()):
-            data.add_new_ohlc(symbol)
+        update_all.main()
         up_to_date["All"] = True
     # Reload the main_table
     data.load_main_table()
@@ -93,7 +97,12 @@ def update_ticker_data(data, button, scope, symbol, sector_symbols, sector, up_t
     State("sector-dropdown", "value"),
     Input("update-state", "data"),
 )
-def update_button_style(scope, symbol, sector, up_to_date):
+def update_button_style(
+    scope, symbol, sector, up_to_date
+) -> (
+    tuple[Literal["Up to date"], Literal["success"], Literal[True]]
+    | tuple[Literal["Update"], Literal["info"], Literal[False]]
+):
     # Set color to "success" and disable if updated, else set "info" and enabled
     if (
         (scope == "Ticker" and symbol in up_to_date)
