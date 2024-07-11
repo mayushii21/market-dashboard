@@ -19,7 +19,8 @@ def update_button() -> dbc.ButtonGroup:
                 outline=True,
                 style={
                     "height": "37px",
-                    "width": "140px",
+                    "width": "fit-content",
+                    "minWidth": "fit-content",
                     "display": "flex",
                     "justifyContent": "center",
                     "alignItems": "center",
@@ -30,7 +31,8 @@ def update_button() -> dbc.ButtonGroup:
                 value="Ticker",
                 id="update-dropdown",
                 style={
-                    "width": "70%",
+                    "width": "auto",
+                    "minWidth": "6em",
                     "height": "37px",
                     "borderTopLeftRadius": 0,  # squarify :]
                     "borderBottomLeftRadius": 0,
