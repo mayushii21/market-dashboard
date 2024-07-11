@@ -5,7 +5,7 @@
 groups = ["default", "test"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.4.2"
-content_hash = "sha256:85708f3a3e30decc5189c8cdea0fb76ad7aa91b008b48e2a97947b27c81356cb"
+content_hash = "sha256:424dc3f483c6b2eba47541163918cfd6461d086c417f62c10553e554df6971e0"
 
 [[package]]
 name = "beautifulsoup4"
@@ -306,7 +306,6 @@ dependencies = [
     "Werkzeug>=3.0.0",
     "blinker>=1.6.2",
     "click>=8.1.3",
-    "importlib-metadata>=3.6.0; python_version < \"3.10\"",
     "itsdangerous>=2.1.2",
 ]
 files = [
