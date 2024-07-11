@@ -23,7 +23,7 @@ OPACITY = 0.5
 
 
 # The price (candlestick) chart
-def price_chart():
+def price_chart() -> dash_tvlwc.Tvlwc:
     return dash_tvlwc.Tvlwc(
         id="tv-price-chart",
         height="calc(100vh - 2em - 83px)",
@@ -32,7 +32,7 @@ def price_chart():
 
 
 # EMA switch with selectable period
-def ema_switch():
+def ema_switch() -> dbc.InputGroup:
     return dbc.InputGroup(
         [
             dbc.InputGroupText(
@@ -65,7 +65,7 @@ def ema_switch():
 
 
 # SMA switch with selectable period
-def sma_switch():
+def sma_switch() -> dbc.InputGroup:
     return dbc.InputGroup(
         [
             dbc.InputGroupText(
@@ -113,8 +113,11 @@ def sma_switch():
 )
 @data_access
 def update_price_chart(data, symbol, ema, sma, ema_period, sma_period, theme, update):
-    # Filter data by ticker symbol
-    ticker = data.main_table[data.main_table.symbol == symbol].set_index("date")
+    # Filter data by ticker symbol and rename for tvlwc
+    ticker = data.main_table.loc[
+        data.main_table.symbol == symbol,
+        ["open", "high", "low", "close", "volume", "date"],
+    ].rename(columns={"date": "time", "volume": "value"})
 
     # Add color for plotting
     ticker["color"] = hex_to_rgba(GREEN, OPACITY)
@@ -127,13 +130,8 @@ def update_price_chart(data, symbol, ema, sma, ema_period, sma_period, theme, up
     # Plot candlesticks (price) and bar chart (volume)
     seriesTypes = ["candlestick", "histogram"]
     seriesData = [
-        ticker[["open", "high", "low", "close"]]
-        .reset_index(names="time")
-        .to_dict("records"),
-        ticker[["volume", "color"]]
-        .reset_index(names="time")
-        .rename(columns={"volume": "value"})
-        .to_dict("records"),
+        ticker[["open", "high", "low", "close", "time"]].to_dict("records"),
+        ticker[["value", "color", "time"]].to_dict("records"),
     ]
     seriesOptions = [
         {
@@ -162,12 +160,11 @@ def update_price_chart(data, symbol, ema, sma, ema_period, sma_period, theme, up
     # bg_color = template["layout"]["plot_bgcolor"]
     grid_color = template["layout"]["scene"]["xaxis"]["gridcolor"]
 
-    def plot_line(indicator):
+    def plot_line(indicator) -> None:
         # Plot indicator line
         seriesTypes.append("line")
         seriesData.append(
-            ticker[[indicator]]
-            .reset_index(names="time")
+            ticker[[indicator, "time"]]
             .rename(columns={indicator: "value"})
             .dropna()
             .to_dict("records")
@@ -237,8 +234,12 @@ def update_price_chart(data, symbol, ema, sma, ema_period, sma_period, theme, up
 def update_indicator_period(
     data, seriesOptions, symbol, ema, sma, ema_period, sma_period
 ) -> Patch:
-    # Filter data by ticker symbol
-    ticker = data.main_table[data.main_table.symbol == symbol].set_index("date")
+    # Filter data by ticker symbol and rename for tvlwc
+    ticker = data.main_table.loc[
+        data.main_table.symbol == symbol,
+        ["close", "date"],
+    ].rename(columns={"date": "time"})
+
     # If no indicator is selected - prevent update
     if not (ema or sma):
         raise PreventUpdate
@@ -246,6 +247,7 @@ def update_indicator_period(
     tv_indicator_index = {
         seriesOptions[i]["silent-title"]: i for i in range(len(seriesOptions))
     }
+
     # Creating a Patch object
     patched_seriesData = Patch()
     # Update partial property (y data for indicator)
@@ -256,8 +258,7 @@ def update_indicator_period(
             .mean()
         )
         patched_seriesData[tv_indicator_index[ema[0]]] = (
-            ticker[["EMA"]]
-            .reset_index(names="time")
+            ticker[["EMA", "time"]]
             .rename(columns={"EMA": "value"})
             .dropna()
             .to_dict("records")
@@ -265,8 +266,7 @@ def update_indicator_period(
     if callback_context.triggered_id == "sma-period" and sma:
         ticker["SMA"] = ticker["close"].rolling(window=sma_period).mean()
         patched_seriesData[tv_indicator_index[sma[0]]] = (
-            ticker[["SMA"]]
-            .reset_index(names="time")
+            ticker[["SMA", "time"]]
             .rename(columns={"SMA": "value"})
             .dropna()
             .to_dict("records")
