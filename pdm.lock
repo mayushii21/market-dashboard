@@ -5,7 +5,7 @@
 groups = ["default"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.4.2"
-content_hash = "sha256:2b42c0a165cde7a8a82ae918034001527ab5fcf96fde20790e2b47da59d274c9"
+content_hash = "sha256:373aa8d48dcf04d754c5a02fb171e8443fd7de9004304389a30937ddab8e965c"
 
 [[package]]
 name = "beautifulsoup4"
@@ -231,6 +231,16 @@ summary = "Trich.ai components library for Dash Plotly"
 groups = ["default"]
 files = [
     {file = "dash_trich_components-1.0.0.tar.gz", hash = "sha256:453b2b7d201190fa250925a05978e2eeec8a9d03b8c12b95867e6e6a4ea11b24"},
+]
+
+[[package]]
+name = "dash-tvlwc"
+version = "0.1.1"
+summary = "Dash Component for Tradingview Lightweight Charts"
+groups = ["default"]
+files = [
+    {file = "dash_tvlwc-0.1.1-py3-none-any.whl", hash = "sha256:29e10c9a494cee6e5003d16756bec874b78ebdd361e871145b520b2284f8f563"},
+    {file = "dash_tvlwc-0.1.1.tar.gz", hash = "sha256:d241026ae25c56a5570949760a7dbac032221710be81a210b59172f8192265bc"},
 ]
 
 [[package]]
