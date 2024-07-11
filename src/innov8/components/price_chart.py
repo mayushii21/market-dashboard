@@ -1,3 +1,5 @@
+import os
+
 import dash_bootstrap_components as dbc
 import dash_tvlwc
 import plotly
@@ -196,7 +198,7 @@ def update_price_chart(data, symbol, ema, sma, ema_period, sma_period, theme, up
         {
             "watermark": {
                 "visible": True,
-                "text": "mayushii21",
+                "text": os.getenv("WATERMARK"),
                 "color": hex_to_rgba(text_color, 0.3),
                 "fontFamily": "Consolas, monospace, Roboto, Ubuntu, sans-serif, 'Trebuchet MS'",
                 "fontSize": 72,
