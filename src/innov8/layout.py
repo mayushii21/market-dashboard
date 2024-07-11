@@ -71,9 +71,9 @@ def layout() -> dbc.Container:
                                     #     width="auto",
                                     # ),
                                     dbc.Col(
-                                        ema_switch(), width={"size": 4, "offset": 2}
+                                        ema_switch(), width={"size": 3, "offset": 4}
                                     ),
-                                    dbc.Col(sma_switch(), width=4),
+                                    dbc.Col(sma_switch(), width=3),
                                 ],
                                 justify="between",
                                 class_name="mb-1",
