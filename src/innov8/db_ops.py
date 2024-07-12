@@ -74,12 +74,18 @@ class DataStore:
             "https://www.slickcharts.com/sp500", headers=headers, timeout=120
         )
         soup = BeautifulSoup(r.text, "lxml")
-        # Extract the text (replacing . with -) from the third cell (Symbol column) of each row of the main table
-        # (ordered by component weights)
-        return [
-            tr.find_all("td")[2].text.replace(".", "-")
-            for tr in cast(Tag, soup.find("tbody")).find_all("tr")
-        ]
+        try:
+            # Extract the text (replacing . with -) from the third cell (Symbol column) of each row of the main table
+            # (ordered by component weights)
+            return [
+                tr.find_all("td")[2].text.replace(".", "-")
+                for tr in cast(Tag, soup.find("tbody")).find_all("tr")
+            ]
+        except:
+            with open(
+                Path(__file__).resolve().parent / "sp500_tickers.txt", "r"
+            ) as file:
+                return [line.strip() for line in file]
 
     def create_tables(self):
         create_tables_query = """

@@ -20,7 +20,7 @@ dependencies = [
     "python-dotenv>=1.0.1",
     "loguru>=0.7.2",
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 readme = "README.md"
 license = {text = "BSD-3-Clause"}
 
@@ -40,4 +40,10 @@ Repository = "https://github.com/mayushii21/market-dashboard"
 addopts = [
     "--import-mode=importlib",
 ]
+
 [tool.pdm]
+
+[tool.pdm.dev-dependencies]
+test = [
+    "pytest>=8.2.2",
+]

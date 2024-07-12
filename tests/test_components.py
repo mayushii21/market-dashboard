@@ -111,4 +111,4 @@ def test_switches():
 
 def test_price_chart():
     # Verify proper component
-    assert price_chart().id == "price-chart"
+    assert price_chart().id == "tv-price-chart"
