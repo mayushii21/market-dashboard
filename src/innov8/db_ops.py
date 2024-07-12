@@ -1,10 +1,12 @@
 import sqlite3
 from pathlib import Path
+from typing import cast
 
 import pandas as pd
 import requests
 import yfinance as yf
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
+from loguru import logger
 from tqdm import tqdm
 
 
@@ -37,8 +39,28 @@ class DataStore:
         self.con = sqlite3.connect(database_path, check_same_thread=False)
         self.cur = self.con.cursor()
         self.ticker_symbols = None
-        self.main_table = None
-        self.tickers = None
+
+        # Check if the database is populated by checking if the price table is present
+        if not self.cur.execute(
+            """
+            SELECT name
+            FROM sqlite_master
+            WHERE TYPE = 'table'
+                AND name = 'price'
+            """
+        ).fetchone():
+            # Create necessary tables
+            self.create_tables()
+            self.initiate_tickers_obj(scrape=True)
+            # Fill database with ticker information
+            self.insert_ticker_info()
+            # Download data and fill date and price tables
+            self.fill_ohlc()
+        # If the database is already populated
+        else:
+            self.initiate_tickers_obj(scrape=False)
+
+        self.load_main_table()
 
     # Define function to scrape ticker symbols of S&P500 stocks
     @staticmethod
@@ -48,14 +70,22 @@ class DataStore:
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
         }
         # Request and parse the web page
-        r = requests.get("https://www.slickcharts.com/sp500", headers=headers)
+        r = requests.get(
+            "https://www.slickcharts.com/sp500", headers=headers, timeout=120
+        )
         soup = BeautifulSoup(r.text, "lxml")
-        # Extract the text (replacing . with -) from the third cell (Symbol column) of each row of the main table
-        # (ordered by component weights)
-        return [
-            tr.find_all("td")[2].text.replace(".", "-")
-            for tr in soup.find("tbody").find_all("tr")
-        ]
+        try:
+            # Extract the text (replacing . with -) from the third cell (Symbol column) of each row of the main table
+            # (ordered by component weights)
+            return [
+                tr.find_all("td")[2].text.replace(".", "-")
+                for tr in cast(Tag, soup.find("tbody")).find_all("tr")
+            ]
+        except:
+            with open(
+                Path(__file__).resolve().parent / "sp500_tickers.txt", "r"
+            ) as file:
+                return [line.strip() for line in file]
 
     def create_tables(self):
         create_tables_query = """
@@ -125,7 +155,7 @@ class DataStore:
         self.con.commit()
 
     def insert_ticker_info(self):
-        print("Populating database with main ticker information...")
+        logger.info("Populating database with main ticker information...")
         for symbol in tqdm(self.ticker_symbols):
             try:
                 with self.con:
@@ -199,13 +229,12 @@ class DataStore:
                         """,
                         info,
                     )
-                    # print(f"Successfully inserted info for {symbol}")
+                    logger.debug("Successfully inserted info for {}", symbol)
             except Exception:
-                # print(f"Failed to insert {symbol}")
-                pass
+                logger.error("Failed to insert {}", symbol)
 
     def fill_ohlc(self):
-        print("Populating database with OHLC data...")
+        logger.info("Populating database with OHLC data...")
         # Per ticker OHLC data retrieval - helps avoid rate limiting
         for symbol in tqdm(
             self.cur.execute(
@@ -271,10 +300,9 @@ class DataStore:
                     """,
                         ohlc_data,
                     )
-                    # print(f"Successfully inserted OHLC data for {symbol[0]}")
+                    logger.debug("Successfully inserted OHLC data for {}", symbol[0])
             except Exception as e:
-                # print(f"[{symbol[0]}] Exception: {e}")
-                pass
+                logger.error("[{}] Exception: {}", symbol[0], e)
 
     # Create DataFrame from SQL query
     def load_main_table(self):
@@ -310,6 +338,7 @@ class DataStore:
 
     # Define function for updating ohlc data for a given ticker by it's symbol
     def add_new_ohlc(self, symbol):
+        logger.debug("Updating {}...", symbol)
         try:
             # Get date for latest entry
             latest_entry = self.cur.execute(
@@ -327,9 +356,7 @@ class DataStore:
                 start=latest_entry, raise_errors=True
             )[["Open", "High", "Low", "Close", "Volume"]]
             # Convert the date to a unix timestamp (remove timezone holding local time representations)
-            ohlc_data.index = (
-                ohlc_data.index.tz_localize(None).astype("int64") / 10**9
-            )
+            ohlc_data.index = ohlc_data.index.tz_localize(None).astype("int64") / 10**9
             ohlc_data.reset_index(inplace=True)
             # Convert to a list of dictionaries (records)
             ohlc_data = ohlc_data.to_dict(orient="records")
@@ -377,41 +404,13 @@ class DataStore:
                     """,
                     ohlc_data,
                 )
-                # print(f"Successfully updated {symbol}")
+                logger.debug("{} updated \u2713", symbol)
         except Exception as e:
-            # print(f"[{symbol}] Exception: {e}")
-            pass
+            logger.error("[{}] Exception: {}", symbol, e)
 
 
 # Get the absolute path of the directory containing the script
 script_directory = Path(__file__).resolve().parent
 # Construct the absolute path to the database file
-database_path = script_directory / "stonks.db"
-data = DataStore(database_path)
-
-# Check if the database is populated by checking if the price table is present
-if not data.cur.execute(
-    """
-    SELECT name
-    FROM sqlite_master
-    WHERE TYPE = 'table'
-        AND name = 'price'
-    """
-).fetchone():
-    # Create necessary tables
-    data.create_tables()
-    data.initiate_tickers_obj(scrape=True)
-    # Fill database with ticker information
-    data.insert_ticker_info()
-    # Download data and fill date and price tables
-    data.fill_ohlc()
-# If the database is already populated
-else:
-    data.initiate_tickers_obj(scrape=False)
-
-data.load_main_table()
-
-# print("Successfully established DB connection")
-
-# con.commit()
-# con.close()
+db_path = script_directory / "stonks.db"
+data = DataStore(db_path)

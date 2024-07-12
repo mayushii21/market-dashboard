@@ -1,14 +1,15 @@
 [project]
 name = "innov8"
-version = "0.0.9-beta"
+version = "0.1.0-beta"
 description = "an interactive market dashboard"
 authors = [
     {name = "mayushii21", email = "122178787+mayushii21@users.noreply.github.com"},
 ]
 dependencies = [
-    "dash==2.12.1",
+    "dash[diskcache]==2.16.1",
     "dash-bootstrap-components",
     "dash-bootstrap-templates",
+    "dash-tvlwc>=0.1.1",
     "dash-trich-components",
     "requests",
     "beautifulsoup4",
@@ -16,8 +17,10 @@ dependencies = [
     "pandas",
     "yfinance",
     "tqdm",
+    "python-dotenv>=1.0.1",
+    "loguru>=0.7.2",
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 readme = "README.md"
 license = {text = "BSD-3-Clause"}
 
@@ -26,7 +29,7 @@ requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
 [project.scripts]
-innov8 = 'innov8.run:main'
+innov8 = 'innov8.run:cli'
 
 [project.urls]
 Homepage = "http://innov8finance.pythonanywhere.com/"
@@ -36,4 +39,11 @@ Repository = "https://github.com/mayushii21/market-dashboard"
 [tool.pytest.ini_options]
 addopts = [
     "--import-mode=importlib",
+]
+
+[tool.pdm]
+
+[tool.pdm.dev-dependencies]
+test = [
+    "pytest>=8.2.2",
 ]
