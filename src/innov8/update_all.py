@@ -8,6 +8,8 @@ def main() -> None:
     logger.info("Updating all...")
     for symbol in tqdm(data.main_table.symbol.unique()):
         data.add_new_ohlc(symbol)
+    # Create an empty signal file to notify the main process of the update
+    open(data.script_directory / "update_signal", "w").close()
 
 
 if __name__ == "__main__":
