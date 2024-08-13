@@ -1,3 +1,4 @@
+import os
 import sqlite3
 from pathlib import Path
 from typing import cast
@@ -34,11 +35,15 @@ class DataStore:
         JOIN ticker_type tt ON t.ticker_type_id = tt.id
     """
 
-    def __init__(self, database_path):
+    def __init__(self, script_directory: Path):
+        self.script_directory = script_directory
+        # Construct the absolute path to the database file
+        db_path = script_directory / "stonks.db"
         # Connect to the database using the absolute path
-        self.con = sqlite3.connect(database_path, check_same_thread=False)
+        self.con = sqlite3.connect(db_path, check_same_thread=False)
         self.cur = self.con.cursor()
         self.ticker_symbols = None
+        self.main_table = None
 
         # Check if the database is populated by checking if the price table is present
         if not self.cur.execute(
@@ -306,19 +311,25 @@ class DataStore:
 
     # Create DataFrame from SQL query
     def load_main_table(self):
-        self.main_table = pd.read_sql_query(
-            self.main_query,
-            self.con,
-            parse_dates=["date"],
-            dtype={
-                "symbol": "category",
-                "name": "category",
-                "sector": "category",
-                "exchange": "category",
-                "type": "category",
-                "currency": "category",
-            },
-        )
+        if (
+            update_signal := os.path.exists(self.script_directory / "update_signal")
+        ) or self.main_table is None:
+            logger.info("Loading main table...")
+            if update_signal:
+                os.remove(self.script_directory / "update_signal")
+            self.main_table = pd.read_sql_query(
+                self.main_query,
+                self.con,
+                parse_dates=["date"],
+                dtype={
+                    "symbol": "category",
+                    "name": "category",
+                    "sector": "category",
+                    "exchange": "category",
+                    "type": "category",
+                    "currency": "category",
+                },
+            )
 
     def initiate_tickers_obj(self, scrape):
         if scrape:
@@ -411,6 +422,5 @@ class DataStore:
 
 # Get the absolute path of the directory containing the script
 script_directory = Path(__file__).resolve().parent
-# Construct the absolute path to the database file
-db_path = script_directory / "stonks.db"
-data = DataStore(db_path)
+
+data = DataStore(script_directory)
