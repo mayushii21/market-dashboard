@@ -4,6 +4,7 @@ from dash import dcc
 from innov8.app import app
 from innov8.components.charts_52w import carousel_52_week
 from innov8.components.dropdowns import dropdown_1, dropdown_2
+from innov8.components.forcast import forecast_button
 from innov8.components.intra_sector import intra_sector_data, table_info
 from innov8.components.main_carousel import carousel
 from innov8.components.price_card import price_card
@@ -35,7 +36,8 @@ def layout() -> dbc.Container:
                                             dcc.Loading(
                                                 [update_button(), update_state()],
                                                 type="dot",
-                                            )
+                                            ),
+                                            forecast_button(),
                                         ],
                                         width={"size": 3, "offset": 1},
                                     ),
