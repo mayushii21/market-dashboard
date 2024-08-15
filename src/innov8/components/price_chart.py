@@ -38,7 +38,9 @@ def ema_switch() -> dbc.InputGroup:
     return dbc.InputGroup(
         [
             dbc.InputGroupText(
-                dbc.Checklist(["EMA"], id="ema", switch=True, persistence=True),
+                dbc.Checklist(
+                    ["EMA"], id="ema", value=["EMA"], switch=True, persistence=True
+                ),
                 style={
                     "height": "37px",
                     "display": "flex",
@@ -71,7 +73,9 @@ def sma_switch() -> dbc.InputGroup:
     return dbc.InputGroup(
         [
             dbc.InputGroupText(
-                dbc.Checklist(["SMA"], id="sma", switch=True, persistence=True),
+                dbc.Checklist(
+                    ["SMA"], id="sma", value=["SMA"], switch=True, persistence=True
+                ),
                 style={
                     "height": "37px",
                     "display": "flex",
