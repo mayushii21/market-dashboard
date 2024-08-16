@@ -1,5 +1,10 @@
+import numpy as np
+
+np.float_ = np.float64
+
 import os
 import sqlite3
+from datetime import datetime
 from pathlib import Path
 from typing import cast
 
@@ -8,6 +13,7 @@ import requests
 import yfinance as yf
 from bs4 import BeautifulSoup, Tag
 from loguru import logger
+from prophet import Prophet
 from tqdm import tqdm
 
 
@@ -43,7 +49,7 @@ class DataStore:
         self.con = sqlite3.connect(db_path, check_same_thread=False)
         self.cur = self.con.cursor()
         self.ticker_symbols = None
-        self.main_table = None
+        self.main_table: pd.DataFrame = None
 
         # Check if the database is populated by checking if the price table is present
         if not self.cur.execute(
@@ -145,6 +151,16 @@ class DataStore:
             currency_id,
             ticker_type_id
         );
+        CREATE TABLE IF NOT EXISTS forecast (
+            ticker_id INTEGER NOT NULL,
+            date INTEGER NOT NULL,
+            open REAL NOT NULL,
+            high REAL NOT NULL,
+            low REAL NOT NULL,
+            close REAL NOT NULL,
+            PRIMARY KEY (ticker_id, date),
+            FOREIGN KEY(ticker_id) REFERENCES ticker(id)
+        );
         """
         drop_tables = """
         DROP TABLE IF EXISTS ticker;
@@ -154,6 +170,7 @@ class DataStore:
         DROP TABLE IF EXISTS ticker_type;
         DROP TABLE IF EXISTS sector;
         DROP TABLE IF EXISTS currency;
+        DROP TABLE IF EXISTS forecast;
         """
         self.cur.executescript(drop_tables)
         self.cur.executescript(create_tables_query)
