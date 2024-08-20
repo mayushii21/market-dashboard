@@ -326,6 +326,93 @@ class DataStore:
             except Exception as e:
                 logger.error("[{}] Exception: {}", symbol[0], e)
 
+    def generate_forecast(self, symbol: str) -> None:
+        df = self.main_table
+
+        forecasts = {}
+        periods = 5
+        for price_type in ["open", "high", "low", "close"]:
+            # Prepare the dataframe for Prophet
+            df_prophet = df.loc[df["symbol"] == symbol, ["date", price_type]].rename(
+                columns={"date": "ds", price_type: "y"}
+            )
+
+            # Initialize and fit the Prophet model
+            model = Prophet()
+            model.fit(df_prophet)
+
+            # Create a dataframe for future dates
+            future = model.make_future_dataframe(
+                periods=periods, freq="B"
+            )  # 'B' is for business days
+            forecast = model.predict(future)
+
+            forecasts[price_type] = forecast[["ds", "yhat"]].tail(periods)
+
+        # Store relevant data in the database
+        for i in range(periods):
+            forecast_date = (
+                forecasts["open"].iloc[i]["ds"].tz_localize(None).timestamp()
+            )
+            forecast_open = forecasts["open"].iloc[i]["yhat"]
+            forecast_high = forecasts["high"].iloc[i]["yhat"]
+            forecast_low = forecasts["low"].iloc[i]["yhat"]
+            forecast_close = forecasts["close"].iloc[i]["yhat"]
+
+            # Insert data into the database
+            try:
+                with self.con:
+                    self.con.execute(
+                        """
+                        INSERT INTO forecast (ticker_id, date, open, high, low, close)
+                        VALUES (
+                            (
+                                SELECT id
+                                FROM ticker
+                                WHERE symbol = ?
+                            ),
+                            ?, ?, ?, ?, ?
+                        )
+                        """,
+                        (
+                            symbol,
+                            forecast_date,
+                            forecast_open,
+                            forecast_high,
+                            forecast_low,
+                            forecast_close,
+                        ),
+                    )
+            except Exception as e:
+                logger.error("[{}] Exception: {}", symbol, e)
+
+    def clear_forecasts(self):
+        with self.con:
+            self.con.execute(
+                """
+                DELETE
+                FROM forecast;
+                """
+            )
+
+    def get_forecasts(self, symbol: str, date: datetime):
+        with self.con:
+            return self.con.execute(
+                """
+                SELECT open, high, low, close, date
+                FROM forecast
+                WHERE ticker_id = (
+                    SELECT id
+                    FROM ticker
+                    WHERE symbol = ?
+                )
+                AND date >= ?
+                ORDER BY date ASC
+                LIMIT 1
+                """,
+                (symbol, date),
+            ).fetchone()
+
     # Create DataFrame from SQL query
     def load_main_table(self):
         if (
