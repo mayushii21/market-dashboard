@@ -2,6 +2,7 @@ import numpy as np
 
 np.float_ = np.float64
 
+import logging
 import os
 import sqlite3
 from datetime import datetime
@@ -15,6 +16,11 @@ from bs4 import BeautifulSoup, Tag
 from loguru import logger
 from prophet import Prophet
 from tqdm import tqdm
+
+# Fit a model to trigger cmdstanpy before setting logging level
+Prophet().fit(pd.DataFrame({"ds": ["2022-01-01", "2022-01-02"], "y": [0, 1]}))
+# Suppress logging from cmdstanpy
+logging.getLogger("cmdstanpy").setLevel(logging.WARNING)
 
 
 # Define class for data storage operations
