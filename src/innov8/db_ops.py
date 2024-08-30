@@ -329,7 +329,7 @@ class DataStore:
     def generate_forecast(self, symbol: str) -> None:
         df = self.main_table
 
-        forecasts = {}
+        predictions = {}
         periods = 5
         for price_type in ["open", "high", "low", "close"]:
             # Prepare the dataframe for Prophet
@@ -347,17 +347,47 @@ class DataStore:
             )  # 'B' is for business days
             forecast = model.predict(future)
 
-            forecasts[price_type] = forecast[["ds", "yhat"]].tail(periods)
+            # Get the last period values
+            last_period = df_prophet.diff().abs()["y"].tail(periods).to_numpy()
+            last_price = df_prophet.iat[-1, 1]
+            # Calculate the sum of the price differences (to be used in the margin)
+            s = last_period.sum()
+            # Resize the array to fit the predicted number of periods
+            price_diffs = np.resize(last_period, periods * 2)
+
+            forecasts = forecast[["ds", "yhat"]].tail(periods)
+            for i in range(periods):
+                # Calculate moving average
+                margin = s / periods
+                # Clip the price to be within the margin
+                price = forecasts.iat[i, 1].clip(
+                    last_price - margin, last_price + margin
+                )
+                # Add the new price difference
+                price_diffs[i + periods] = abs(price - last_price)
+                last_price = price
+                # Update the sum
+                s = s - price_diffs[i] + price_diffs[i + periods]
+                forecasts.iat[i, 1] = price
+            predictions[price_type] = forecasts
 
         # Store relevant data in the database
         for i in range(periods):
-            forecast_date = (
-                forecasts["open"].iloc[i]["ds"].tz_localize(None).timestamp()
+            d = predictions["open"].iloc[i]["ds"].tz_localize(None).timestamp()
+            o = predictions["open"].iloc[i]["yhat"]
+            c = predictions["close"].iloc[i]["yhat"]
+            h = max(
+                predictions["high"].iloc[i]["yhat"],
+                o,
+                c,
+                predictions["low"].iloc[i]["yhat"],
             )
-            forecast_open = forecasts["open"].iloc[i]["yhat"]
-            forecast_high = forecasts["high"].iloc[i]["yhat"]
-            forecast_low = forecasts["low"].iloc[i]["yhat"]
-            forecast_close = forecasts["close"].iloc[i]["yhat"]
+            l = min(
+                predictions["low"].iloc[i]["yhat"],
+                o,
+                c,
+                predictions["high"].iloc[i]["yhat"],
+            )
 
             # Insert data into the database
             try:
@@ -376,11 +406,11 @@ class DataStore:
                         """,
                         (
                             symbol,
-                            forecast_date,
-                            forecast_open,
-                            forecast_high,
-                            forecast_low,
-                            forecast_close,
+                            d,
+                            o,
+                            h,
+                            l,
+                            c,
                         ),
                     )
             except Exception as e:
