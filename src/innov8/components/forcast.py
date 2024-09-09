@@ -30,7 +30,7 @@ def forecast_button() -> dbc.Button:
     prevent_initial_call=True,
 )
 @data_access
-def update_price_chart_w_forcast(data, button, series_data, symbol, _) -> Any:
+def update_price_chart_w_forecast(data, button, series_data, symbol, _) -> Any:
     style = {"height": "37px", "width": "100%"}
 
     # On initial render or ticker switch
@@ -54,7 +54,6 @@ def update_price_chart_w_forcast(data, button, series_data, symbol, _) -> Any:
     date_obj = datetime(
         day=date["day"], month=date["month"], year=date["year"], tzinfo=timezone.utc
     )
-    date_obj = date_obj + timedelta(days=1)
 
     forecast = data.get_forecasts(symbol, date_obj.timestamp())
 
@@ -69,6 +68,8 @@ def update_price_chart_w_forcast(data, button, series_data, symbol, _) -> Any:
             }
         )
 
-        nxt = data.get_forecasts(symbol, (date_obj + timedelta(days=1)).timestamp())
+        nxt = data.get_forecasts(symbol, forecast[4])
 
         return series_data, nxt is None, no_update, color, style
+
+    return (no_update, True, no_update, color, style)
