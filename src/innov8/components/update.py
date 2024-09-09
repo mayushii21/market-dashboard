@@ -27,12 +27,16 @@ def update_button() -> dbc.ButtonGroup:
                 },
             ),
             dcc.Dropdown(
-                options=["Ticker", "Sector", "All"],
+                options=[
+                    {"label": "Ticker", "value": "Ticker"},
+                    {"label": "Sector", "value": "Sector"},
+                    {"label": "All (Premium)", "value": "All", "disabled": True},
+                ],
                 value="Ticker",
                 id="update-dropdown",
                 style={
                     "width": "auto",
-                    "minWidth": "6em",
+                    "minWidth": "8em",
                     "height": "37px",
                     "borderTopLeftRadius": 0,  # squarify :]
                     "borderBottomLeftRadius": 0,
