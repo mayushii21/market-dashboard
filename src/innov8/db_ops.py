@@ -380,19 +380,19 @@ class DataStore:
 
         # Store relevant data in the database
         for i in range(periods):
-            d = predictions["open"].iloc[i]["ds"].tz_localize(None).timestamp()
-            o = predictions["open"].iloc[i]["yhat"]
-            c = predictions["close"].iloc[i]["yhat"]
-            h = max(
+            pred_date = predictions["open"].iloc[i]["ds"].tz_localize(None).timestamp()
+            o_price = predictions["open"].iloc[i]["yhat"]
+            c_price = predictions["close"].iloc[i]["yhat"]
+            h_price = max(
                 predictions["high"].iloc[i]["yhat"],
-                o,
-                c,
+                o_price,
+                c_price,
                 predictions["low"].iloc[i]["yhat"],
             )
-            l = min(
+            l_price = min(
                 predictions["low"].iloc[i]["yhat"],
-                o,
-                c,
+                o_price,
+                c_price,
                 predictions["high"].iloc[i]["yhat"],
             )
 
@@ -413,11 +413,11 @@ class DataStore:
                         """,
                         (
                             symbol,
-                            d,
-                            o,
-                            h,
-                            l,
-                            c,
+                            pred_date,
+                            o_price,
+                            h_price,
+                            l_price,
+                            c_price,
                         ),
                     )
             except Exception as e:
