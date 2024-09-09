@@ -29,20 +29,21 @@ def layout() -> dbc.Container:
                             # This row holds the dropdowns responsible for sector and ticker selection and the update button
                             dbc.Row(
                                 [
-                                    dbc.Col([dropdown_1()], width=5),
+                                    dbc.Col([dropdown_1()], width=4),
                                     dbc.Col([dropdown_2()], width=3),
                                     dbc.Col(
                                         [
                                             dcc.Loading(
                                                 [update_button(), update_state()],
                                                 type="dot",
-                                            ),
-                                            forecast_button(),
+                                            )
                                         ],
-                                        width={"size": 3, "offset": 1},
+                                        width={"size": 3},
                                     ),
+                                    dbc.Col([forecast_button()], width=1),
                                 ],
-                                class_name="mb-1",
+                                class_name="mb-1 g-0",
+                                justify="between",
                             ),
                             # This row contains the main price (candlestick) chart
                             dbc.Row(
@@ -73,12 +74,12 @@ def layout() -> dbc.Container:
                                     #     width="auto",
                                     # ),
                                     dbc.Col(
-                                        ema_switch(), width={"size": 3, "offset": 4}
+                                        ema_switch(), width={"size": 3, "offset": 3}
                                     ),
                                     dbc.Col(sma_switch(), width=3),
                                 ],
                                 justify="between",
-                                class_name="mb-1",
+                                class_name="mb-1 g-0",
                             ),
                         ],
                         width=9,  # investigate why this is needed later
