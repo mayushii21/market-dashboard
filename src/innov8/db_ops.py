@@ -1,4 +1,12 @@
+import numpy as np
+
+np.float_ = np.float64
+
+import logging
+import os
 import sqlite3
+import time
+from datetime import datetime
 from pathlib import Path
 from typing import cast
 
@@ -7,7 +15,13 @@ import requests
 import yfinance as yf
 from bs4 import BeautifulSoup, Tag
 from loguru import logger
+from prophet import Prophet
 from tqdm import tqdm
+
+# Fit a model to trigger cmdstanpy before setting logging level
+Prophet().fit(pd.DataFrame({"ds": ["2022-01-01", "2022-01-02"], "y": [0, 1]}))
+# Suppress logging from cmdstanpy
+logging.getLogger("cmdstanpy").setLevel(logging.WARNING)
 
 
 # Define class for data storage operations
@@ -34,11 +48,15 @@ class DataStore:
         JOIN ticker_type tt ON t.ticker_type_id = tt.id
     """
 
-    def __init__(self, database_path):
+    def __init__(self, script_directory: Path):
+        self.script_directory = script_directory
+        # Construct the absolute path to the database file
+        db_path = script_directory / "stonks.db"
         # Connect to the database using the absolute path
-        self.con = sqlite3.connect(database_path, check_same_thread=False)
+        self.con = sqlite3.connect(db_path, check_same_thread=False)
         self.cur = self.con.cursor()
         self.ticker_symbols = None
+        self.main_table: pd.DataFrame = None
 
         # Check if the database is populated by checking if the price table is present
         if not self.cur.execute(
@@ -140,6 +158,16 @@ class DataStore:
             currency_id,
             ticker_type_id
         );
+        CREATE TABLE IF NOT EXISTS forecast (
+            ticker_id INTEGER NOT NULL,
+            date INTEGER NOT NULL,
+            open REAL NOT NULL,
+            high REAL NOT NULL,
+            low REAL NOT NULL,
+            close REAL NOT NULL,
+            PRIMARY KEY (ticker_id, date),
+            FOREIGN KEY(ticker_id) REFERENCES ticker(id)
+        );
         """
         drop_tables = """
         DROP TABLE IF EXISTS ticker;
@@ -149,6 +177,7 @@ class DataStore:
         DROP TABLE IF EXISTS ticker_type;
         DROP TABLE IF EXISTS sector;
         DROP TABLE IF EXISTS currency;
+        DROP TABLE IF EXISTS forecast;
         """
         self.cur.executescript(drop_tables)
         self.cur.executescript(create_tables_query)
@@ -304,21 +333,146 @@ class DataStore:
             except Exception as e:
                 logger.error("[{}] Exception: {}", symbol[0], e)
 
+    def generate_forecast(self, symbol: str) -> None:
+        df = self.main_table
+
+        predictions = {}
+        periods = 5
+        for price_type in ["open", "high", "low", "close"]:
+            # Prepare the dataframe for Prophet
+            df_prophet = df.loc[df["symbol"] == symbol, ["date", price_type]].rename(
+                columns={"date": "ds", price_type: "y"}
+            )
+
+            # Initialize and fit the Prophet model
+            model = Prophet()
+            model.fit(df_prophet)
+
+            # Create a dataframe for future dates
+            future = model.make_future_dataframe(
+                periods=periods, freq="B"
+            )  # 'B' is for business days
+            forecast = model.predict(future)
+
+            # Get the last period values
+            last_period = df_prophet.diff().abs()["y"].tail(periods).to_numpy()
+            last_price = df_prophet.iat[-1, 1]
+            # Calculate the sum of the price differences (to be used in the margin)
+            s = last_period.sum()
+            # Resize the array to fit the predicted number of periods
+            price_diffs = np.resize(last_period, periods * 2)
+
+            forecasts = forecast[["ds", "yhat"]].tail(periods)
+            for i in range(periods):
+                # Calculate moving average
+                margin = s / periods
+                # Clip the price to be within the margin
+                price = forecasts.iat[i, 1].clip(
+                    last_price - margin, last_price + margin
+                )
+                # Add the new price difference
+                price_diffs[i + periods] = abs(price - last_price)
+                last_price = price
+                # Update the sum
+                s = s - price_diffs[i] + price_diffs[i + periods]
+                forecasts.iat[i, 1] = price
+            predictions[price_type] = forecasts
+
+        # Store relevant data in the database
+        for i in range(periods):
+            pred_date = predictions["open"].iloc[i]["ds"].tz_localize(None).timestamp()
+            o_price = predictions["open"].iloc[i]["yhat"]
+            c_price = predictions["close"].iloc[i]["yhat"]
+            h_price = max(
+                predictions["high"].iloc[i]["yhat"],
+                o_price,
+                c_price,
+                predictions["low"].iloc[i]["yhat"],
+            )
+            l_price = min(
+                predictions["low"].iloc[i]["yhat"],
+                o_price,
+                c_price,
+                predictions["high"].iloc[i]["yhat"],
+            )
+
+            # Insert data into the database
+            try:
+                with self.con:
+                    self.con.execute(
+                        """
+                        INSERT INTO forecast (ticker_id, date, open, high, low, close)
+                        VALUES (
+                            (
+                                SELECT id
+                                FROM ticker
+                                WHERE symbol = ?
+                            ),
+                            ?, ?, ?, ?, ?
+                        )
+                        """,
+                        (
+                            symbol,
+                            pred_date,
+                            o_price,
+                            h_price,
+                            l_price,
+                            c_price,
+                        ),
+                    )
+            except Exception as e:
+                logger.error("[{}] Exception: {}", symbol, e)
+
+    def clear_forecasts(self):
+        with self.con:
+            self.con.execute(
+                """
+                DELETE
+                FROM forecast;
+                """
+            )
+
+    def get_forecasts(self, symbol: str, date: datetime):
+        with self.con:
+            return self.con.execute(
+                """
+                SELECT open, high, low, close, date
+                FROM forecast
+                WHERE ticker_id = (
+                    SELECT id
+                    FROM ticker
+                    WHERE symbol = ?
+                )
+                AND date > ?
+                ORDER BY date ASC
+                LIMIT 1
+                """,
+                (symbol, date),
+            ).fetchone()
+
     # Create DataFrame from SQL query
-    def load_main_table(self):
-        self.main_table = pd.read_sql_query(
-            self.main_query,
-            self.con,
-            parse_dates=["date"],
-            dtype={
-                "symbol": "category",
-                "name": "category",
-                "sector": "category",
-                "exchange": "category",
-                "type": "category",
-                "currency": "category",
-            },
-        )
+    def load_main_table(self, force_update=True):
+        if (
+            (update_signal := os.path.exists(self.script_directory / "update_signal"))
+            or force_update
+            or self.main_table is None
+        ):
+            logger.info("Loading main table...")
+            if update_signal:
+                os.remove(self.script_directory / "update_signal")
+            self.main_table = pd.read_sql_query(
+                self.main_query,
+                self.con,
+                parse_dates=["date"],
+                dtype={
+                    "symbol": "category",
+                    "name": "category",
+                    "sector": "category",
+                    "exchange": "category",
+                    "type": "category",
+                    "currency": "category",
+                },
+            )
 
     def initiate_tickers_obj(self, scrape):
         if scrape:
@@ -340,8 +494,8 @@ class DataStore:
     def add_new_ohlc(self, symbol):
         logger.debug("Updating {}...", symbol)
         try:
-            # Get date for latest entry
-            latest_entry = self.cur.execute(
+            # Get the date for the next entry
+            next_entry = self.cur.execute(
                 """
                 SELECT DATE(max(date) + 86400, 'unixepoch')
                 FROM price p
@@ -351,9 +505,25 @@ class DataStore:
                 """,
                 (symbol,),
             ).fetchone()[0]
+
+            # Skip when start date is after end date
+            timezone = self.tickers.tickers[symbol]._get_ticker_tz(
+                self.tickers.tickers[symbol].proxy, timeout=10
+            )
+            s = yf.utils._parse_user_dt(next_entry, timezone)
+            e = int(time.time())
+            if s > e:
+                logger.debug(
+                    "Skipping {}, start date ({}) cannot be after end date ({})",
+                    symbol,
+                    s,
+                    e,
+                )
+                return
+
             # Retrieve new OHLC data for symbol
             ohlc_data = self.tickers.tickers[symbol].history(
-                start=latest_entry, raise_errors=True
+                start=next_entry, raise_errors=True
             )[["Open", "High", "Low", "Close", "Volume"]]
             # Convert the date to a unix timestamp (remove timezone holding local time representations)
             ohlc_data.index = ohlc_data.index.tz_localize(None).astype("int64") / 10**9
@@ -411,6 +581,5 @@ class DataStore:
 
 # Get the absolute path of the directory containing the script
 script_directory = Path(__file__).resolve().parent
-# Construct the absolute path to the database file
-db_path = script_directory / "stonks.db"
-data = DataStore(db_path)
+
+data = DataStore(script_directory)
