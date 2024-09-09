@@ -21,6 +21,7 @@ def main() -> None:
     logger.info("Updating all...")
     for symbol in tqdm(symbols):
         data.add_new_ohlc(symbol)
+    data.load_main_table(force_update=True)
     # Create an empty signal file to notify the main process of the update
     open(data.script_directory / "update_signal", "w").close()
 
