@@ -3,7 +3,6 @@ from typing import Any
 
 import dash_bootstrap_components as dbc
 from dash import Input, Output, State, ctx, no_update
-from loguru import logger
 
 from innov8.components.decorators import callback, data_access
 
@@ -13,15 +12,7 @@ def forecast_button() -> dbc.Button:
         id="forecast-button",
         children="Forecast",
         outline=True,
-        color="info",
-        style={
-            "height": "37px",
-            "width": "37px",
-            "minWidth": "fit-content",
-            "display": "flex",
-            "justifyContent": "center",
-            "alignItems": "center",
-        },
+        color="success",
     )
 
 
@@ -29,15 +20,34 @@ def forecast_button() -> dbc.Button:
 @callback(
     Output("tv-price-chart", "seriesData", allow_duplicate=True),
     Output("forecast-button", "disabled"),
+    Output("forecast-button", "n_clicks"),
+    Output("forecast-button", "color"),
+    Output("forecast-button", "style"),
     Input("forecast-button", "n_clicks"),
     State("tv-price-chart", "seriesData"),
     Input("symbol-dropdown", "value"),
+    Input("update-state", "data"),
     prevent_initial_call=True,
 )
 @data_access
-def update_price_chart_w_forcast(data, button, series_data, symbol) -> Any:
-    if ctx.triggered_id != "forecast-button":
-        return no_update, False
+def update_price_chart_w_forcast(data, button, series_data, symbol, _) -> Any:
+    style = {"height": "37px", "width": "100%"}
+
+    # On initial render or ticker switch
+    if ctx.triggered_id != "forecast-button" or ctx.triggered_id == "update-state":
+        return (no_update, False, None, "success", style)
+
+    # Change the button color and style depending on how many times the forecast button has been pressed
+    match button:
+        case 1:
+            color = "warning"
+        case 3:
+            color = "danger"
+        case _:
+            color = no_update
+    match button:
+        case 2 | 4:
+            style |= {"filter": "hue-rotate(-7deg) contrast(1.05) brightness(0.75)"}
 
     date = series_data[0][-1]["time"]
 
@@ -61,4 +71,4 @@ def update_price_chart_w_forcast(data, button, series_data, symbol) -> Any:
 
         nxt = data.get_forecasts(symbol, (date_obj + timedelta(days=1)).timestamp())
 
-        return series_data, nxt is None
+        return series_data, nxt is None, no_update, color, style
