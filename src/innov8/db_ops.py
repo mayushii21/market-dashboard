@@ -5,6 +5,7 @@ np.float_ = np.float64
 import logging
 import os
 import sqlite3
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import cast
@@ -442,7 +443,7 @@ class DataStore:
                     FROM ticker
                     WHERE symbol = ?
                 )
-                AND date >= ?
+                AND date > ?
                 ORDER BY date ASC
                 LIMIT 1
                 """,
@@ -493,8 +494,8 @@ class DataStore:
     def add_new_ohlc(self, symbol):
         logger.debug("Updating {}...", symbol)
         try:
-            # Get date for latest entry
-            latest_entry = self.cur.execute(
+            # Get the date for the next entry
+            next_entry = self.cur.execute(
                 """
                 SELECT DATE(max(date) + 86400, 'unixepoch')
                 FROM price p
@@ -504,9 +505,25 @@ class DataStore:
                 """,
                 (symbol,),
             ).fetchone()[0]
+
+            # Skip when start date is after end date
+            timezone = self.tickers.tickers[symbol]._get_ticker_tz(
+                self.tickers.tickers[symbol].proxy, timeout=10
+            )
+            s = yf.utils._parse_user_dt(next_entry, timezone)
+            e = int(time.time())
+            if s > e:
+                logger.debug(
+                    "Skipping {}, start date ({}) cannot be after end date ({})",
+                    symbol,
+                    s,
+                    e,
+                )
+                return
+
             # Retrieve new OHLC data for symbol
             ohlc_data = self.tickers.tickers[symbol].history(
-                start=latest_entry, raise_errors=True
+                start=next_entry, raise_errors=True
             )[["Open", "High", "Low", "Close", "Volume"]]
             # Convert the date to a unix timestamp (remove timezone holding local time representations)
             ohlc_data.index = ohlc_data.index.tz_localize(None).astype("int64") / 10**9
