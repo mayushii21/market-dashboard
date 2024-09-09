@@ -8,13 +8,13 @@ from innov8.db_ops import DataStore
 # Get the absolute path of the directory containing the script
 script_directory = Path(__file__).resolve().parent
 # Construct the absolute path to the database file
-database_path = script_directory / "test_stonks.db"
+database_path = script_directory / "stonks.db"
 
 
 @pytest.fixture(scope="module")
-def data_store():
+def data_store() -> DataStore:
     # Create a DataStore instance for testing
-    data = DataStore(database_path)
+    data = DataStore(script_directory)
     data.create_tables()
     return data
 
@@ -37,6 +37,7 @@ def test_create_tables(data_store):
         ("ticker",),
         ("date",),
         ("price",),
+        ("forecast",),
     ]
 
 
