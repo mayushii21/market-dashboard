@@ -16,7 +16,8 @@ from innov8.db_ops import data
 
 # Pool (combine) the layout
 def layout() -> dbc.Container:
-    data.load_main_table()
+    # update main table only if needed (update signal exists)
+    data.load_main_table(force_update=False)
     return dbc.Container(
         [
             # A carousel for 10 tickers with the largest absolute change occupying the topmost row

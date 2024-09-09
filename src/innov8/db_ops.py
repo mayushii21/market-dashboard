@@ -450,10 +450,12 @@ class DataStore:
             ).fetchone()
 
     # Create DataFrame from SQL query
-    def load_main_table(self):
+    def load_main_table(self, force_update=True):
         if (
-            update_signal := os.path.exists(self.script_directory / "update_signal")
-        ) or self.main_table is None:
+            (update_signal := os.path.exists(self.script_directory / "update_signal"))
+            or force_update
+            or self.main_table is None
+        ):
             logger.info("Loading main table...")
             if update_signal:
                 os.remove(self.script_directory / "update_signal")
