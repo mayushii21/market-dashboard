@@ -1,21 +1,17 @@
+import sys
+
 import numpy as np
 
 np.float_ = np.float64
 
-import logging
-
-import pandas as pd
 from loguru import logger
-from prophet import Prophet
 from tqdm import tqdm
 
 from innov8.db_ops import data
 
 
 def main() -> None:
-    Prophet().fit(pd.DataFrame({"ds": ["2022-01-01", "2022-01-02"], "y": [0, 1]}))
-    # Suppress logging from cmdstanpy
-    logging.getLogger("cmdstanpy").setLevel(logging.WARNING)
+    logger.configure(handlers=[{"sink": sys.stderr, "level": "INFO"}])
 
     symbols = data.main_table.symbol.unique()
     logger.info("Updating all...")
