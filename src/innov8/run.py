@@ -1,6 +1,7 @@
 import argparse
 import os
 import sys
+from pathlib import Path
 
 from dotenv import load_dotenv
 from loguru import logger
@@ -8,7 +9,7 @@ from loguru import logger
 from innov8 import update_all
 from innov8.layout import app
 
-load_dotenv(".safe_env")
+load_dotenv(Path(__file__).parents[2] / ".safe_env")
 # Create server for gunicorn
 server = app.server
 
