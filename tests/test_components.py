@@ -50,7 +50,11 @@ def test_update_button():
     update_group_data = update_button()
     # Check settings
     assert update_group_data.children[0].outline is True
-    assert update_group_data.children[1].options == ["Ticker", "Sector", "All"]
+    assert {option["value"] for option in update_group_data.children[1].options} == {
+        "Ticker",
+        "Sector",
+        "All",
+    }
     assert update_group_data.children[1].value == "Ticker"
     assert update_group_data.children[1].clearable is False
     # Verify proper components
