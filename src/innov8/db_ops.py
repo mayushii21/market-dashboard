@@ -51,9 +51,9 @@ class DataStore:
     def __init__(self, script_directory: Path):
         self.script_directory = script_directory
         # Construct the absolute path to the database file
-        db_path = script_directory / "stonks.db"
+        self.db_path = script_directory / "stonks.db"
         # Connect to the database using the absolute path
-        self.con = sqlite3.connect(db_path, check_same_thread=False)
+        self.con = sqlite3.connect(self.db_path, check_same_thread=False)
         self.cur = self.con.cursor()
         self.ticker_symbols = None
         self.main_table: pd.DataFrame = None
@@ -459,6 +459,11 @@ class DataStore:
         ):
             logger.info("Loading main table...")
             if update_signal:
+                if self.con:
+                    self.con.close()  # Close the existing connection if it exists
+
+                self.con = sqlite3.connect(self.db_path, check_same_thread=False)
+                self.cur = self.con.cursor()
                 os.remove(self.script_directory / "update_signal")
             self.main_table = pd.read_sql_query(
                 self.main_query,
