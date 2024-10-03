@@ -13,6 +13,7 @@ def forecast_button() -> dbc.Button:
         children="Forecast",
         outline=True,
         color="success",
+        style={"height": "37px", "width": "100%"},
     )
 
 
