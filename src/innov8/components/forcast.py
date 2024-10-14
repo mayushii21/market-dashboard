@@ -4,7 +4,7 @@ from typing import Any
 import dash_bootstrap_components as dbc
 from dash import Input, Output, State, ctx, no_update
 
-from innov8.components.decorators import callback, data_access
+from innov8.decorators.data_access import callback, data_access
 
 
 def forecast_button() -> dbc.Button:

@@ -1,6 +1,6 @@
 import numpy as np
 
-np.float_ = np.float64
+np.float_ = np.float64  # type: ignore
 
 import logging
 import os
@@ -56,7 +56,7 @@ class DataStore:
         self.con = sqlite3.connect(self.db_path, check_same_thread=False)
         self.cur = self.con.cursor()
         self.ticker_symbols = None
-        self.main_table: pd.DataFrame = None
+        self.main_table: pd.DataFrame | None = None
 
         # Check if the database is populated by checking if the price table is present
         if not self.cur.execute(
@@ -280,7 +280,10 @@ class DataStore:
                 )[["Open", "High", "Low", "Close", "Volume"]]
                 # Convert the date to a unix timestamp (remove timezone holding local time representations)
                 ohlc_data.index = (
-                    ohlc_data.index.tz_localize(None).astype("int64") / 10**9
+                    cast(pd.DatetimeIndex, ohlc_data.index)
+                    .tz_localize(None)
+                    .astype("int64")
+                    / 10**9
                 )
                 ohlc_data.reset_index(inplace=True)
                 # Convert to a list of dictionaries (records)
@@ -335,6 +338,7 @@ class DataStore:
 
     def generate_forecast(self, symbol: str) -> None:
         df = self.main_table
+        assert df is not None
 
         predictions = {}
         periods = 5
@@ -531,7 +535,12 @@ class DataStore:
                 start=next_entry, raise_errors=True
             )[["Open", "High", "Low", "Close", "Volume"]]
             # Convert the date to a unix timestamp (remove timezone holding local time representations)
-            ohlc_data.index = ohlc_data.index.tz_localize(None).astype("int64") / 10**9
+            ohlc_data.index = (
+                cast(pd.DatetimeIndex, ohlc_data.index)
+                .tz_localize(None)
+                .astype("int64")
+                / 10**9
+            )
             ohlc_data.reset_index(inplace=True)
             # Convert to a list of dictionaries (records)
             ohlc_data = ohlc_data.to_dict(orient="records")

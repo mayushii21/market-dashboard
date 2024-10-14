@@ -8,7 +8,7 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from dash_bootstrap_templates import ThemeChangerAIO, template_from_url
 
-from innov8.components.decorators import callback, data_access
+from innov8.decorators.data_access import callback, data_access
 
 
 def hex_to_rgba(hex_color, alpha=1.0) -> str:

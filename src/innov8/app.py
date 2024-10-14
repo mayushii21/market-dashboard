@@ -18,4 +18,5 @@ app = Dash(
     title="innov8finance",
     background_callback_manager=background_callback_manager,
     suppress_callback_exceptions=True,
+    serve_locally=False,
 )

@@ -2,7 +2,7 @@ import sys
 
 import numpy as np
 
-np.float_ = np.float64
+np.float_ = np.float64  # type: ignore
 
 from loguru import logger
 from tqdm import tqdm

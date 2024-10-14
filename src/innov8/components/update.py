@@ -7,7 +7,7 @@ from loguru import logger
 from tqdm import tqdm
 
 from innov8 import update_all
-from innov8.components.decorators import callback, data_access
+from innov8.decorators.data_access import callback, data_access
 
 
 # Button with scope dropdown

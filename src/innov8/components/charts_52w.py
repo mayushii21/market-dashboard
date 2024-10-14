@@ -4,7 +4,7 @@ from dash import dcc
 from dash.dependencies import Input, Output
 from dash_bootstrap_templates import ThemeChangerAIO, template_from_url
 
-from innov8.components.decorators import callback, data_access
+from innov8.decorators.data_access import callback, data_access
 
 
 # Carousel showing 52-week data
@@ -85,7 +85,7 @@ def update_52_week_charts(data, symbol, theme, update):
             gauge={
                 "axis": {"range": [df_52_week_low, df_52_week_high]},
                 # Set bar color to theme's primary color (extracted from previous chart)
-                "bar": {"color": fig.layout.template.layout.colorway[0]},
+                "bar": {"color": fig.layout.template.layout.colorway[0]},  # type: ignore
             },
             domain={"x": [0, 1], "y": [0, 0.9]},
         )

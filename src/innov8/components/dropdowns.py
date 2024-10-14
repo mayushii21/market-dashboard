@@ -1,7 +1,7 @@
 from dash import dcc
 from dash.dependencies import Input, Output
 
-from innov8.components.decorators import callback, data_access
+from innov8.decorators.data_access import callback, data_access
 
 # list all sectors
 sector_query = """
