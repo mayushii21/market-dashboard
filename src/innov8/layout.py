@@ -2,15 +2,22 @@ import dash_bootstrap_components as dbc
 from dash import dcc
 
 from innov8.app import app
-from innov8.components.charts_52w import carousel_52_week
-from innov8.components.dropdowns import dropdown_1, dropdown_2
-from innov8.components.forcast import forecast_button
-from innov8.components.intra_sector import intra_sector_data, table_info
-from innov8.components.main_carousel import carousel
-from innov8.components.price_card import price_card
-from innov8.components.price_chart import ema_switch, price_chart, sma_switch
-from innov8.components.themes import theme_changer
-from innov8.components.update import update_button, update_state
+from innov8.components import (
+    carousel,
+    carousel_52_week,
+    dropdown_1,
+    dropdown_2,
+    ema_switch,
+    forecast_button,
+    intra_sector_data,
+    price_card,
+    price_chart,
+    sma_switch,
+    table_info,
+    theme_changer,
+    update_button,
+    update_state,
+)
 from innov8.db_ops import data
 
 
