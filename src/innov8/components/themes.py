@@ -51,11 +51,6 @@ theme_changer = ThemeChangerAIO(
                 "label_id": "theme-switch-label",
             },
             {
-                "label": "Lumen",
-                "value": dbc.themes.LUMEN,
-                "label_id": "theme-switch-label",
-            },
-            {
                 "label": "Minty",
                 "value": dbc.themes.MINTY,
                 "label_id": "theme-switch-label",

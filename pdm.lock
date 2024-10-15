@@ -5,7 +5,7 @@
 groups = ["default", "test"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.4.2"
-content_hash = "sha256:1488de8559caa6e8958dfd0661c9c48468b8f8ec27ec624c0c0ac6fea97dc676"
+content_hash = "sha256:1ca99bab482fe38b3db562e7dc1335fff1897af0fe3fafa7ba0def98e35abe4c"
 
 [[package]]
 name = "beautifulsoup4"
@@ -255,7 +255,7 @@ files = [
 
 [[package]]
 name = "dash-bootstrap-templates"
-version = "1.2.0"
+version = "1.1.2"
 summary = "A collection of Plotly figure templates with a Bootstrap theme"
 groups = ["default"]
 dependencies = [
@@ -264,8 +264,8 @@ dependencies = [
     "numpy",
 ]
 files = [
-    {file = "dash_bootstrap_templates-1.2.0-py3-none-any.whl", hash = "sha256:450447bd068249fa8d1e9fdbd996de5ba28ff4d19a3073f5327d57f1401fd56f"},
-    {file = "dash_bootstrap_templates-1.2.0.tar.gz", hash = "sha256:666dff73f091e4544337004667ed4c486767a6344695d7cfb2974c660f03aa0e"},
+    {file = "dash-bootstrap-templates-1.1.2.tar.gz", hash = "sha256:ad09b6d22500b7de3fd6cfe4886389de653ef16320969915f728b4bac5a7ba30"},
+    {file = "dash_bootstrap_templates-1.1.2-py3-none-any.whl", hash = "sha256:87bb1e9dd7ac475f07d1237159091b9d154aa80fdae5fe579fb868e87343dfcd"},
 ]
 
 [[package]]
