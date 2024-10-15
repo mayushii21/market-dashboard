@@ -1,5 +1,5 @@
 import dash_bootstrap_components as dbc
-from dash import dcc
+from dash import dcc, html
 
 from innov8.app import app
 from innov8.components import (
@@ -54,13 +54,9 @@ def layout() -> dbc.Container:
                                 justify="between",
                             ),
                             # This row contains the main price (candlestick) chart
-                            dbc.Row(
-                                [
-                                    dbc.Col(
-                                        [price_chart()],
-                                        width=12,
-                                    ),
-                                ],
+                            html.Div(
+                                price_chart(),
+                                id="price-chart-container",
                             ),
                             # This row stores the theme changer component and indicators
                             dbc.Row(
@@ -98,17 +94,9 @@ def layout() -> dbc.Container:
                         [
                             dbc.Row([dbc.Col([price_card()], width=12)]),
                             dbc.Row([dbc.Col([table_info()], width=12)]),
-                            dbc.Row(
-                                [
-                                    dbc.Col(
-                                        [
-                                            dcc.Loading(
-                                                carousel_52_week(), type="circle"
-                                            )
-                                        ],
-                                        width=12,
-                                    )
-                                ],
+                            html.Div(
+                                carousel_52_week(),
+                                id="52-week-chart-container",
                             ),
                         ],
                         width=3,  # -''-
