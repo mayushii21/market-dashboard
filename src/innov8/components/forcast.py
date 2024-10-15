@@ -13,7 +13,7 @@ def forecast_button() -> dbc.Button:
         children="Forecast",
         outline=True,
         color="success",
-        style={"height": "37px", "width": "100%"},
+        style={"height": "37px", "width": "100%", "min-width": "min-content"},
     )
 
 
@@ -32,7 +32,7 @@ def forecast_button() -> dbc.Button:
 )
 @data_access
 def update_price_chart_w_forecast(data, button, series_data, symbol, _) -> Any:
-    style = {"height": "37px", "width": "100%"}
+    style = {"height": "37px", "width": "100%", "min-width": "min-content"}
 
     # On initial render or ticker switch
     if ctx.triggered_id != "forecast-button" or ctx.triggered_id == "update-state":
