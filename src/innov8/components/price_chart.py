@@ -109,6 +109,7 @@ def sma_switch() -> dbc.InputGroup:
     Output("tv-price-chart", "seriesData"),
     Output("tv-price-chart", "seriesOptions"),
     Output("tv-price-chart", "chartOptions"),
+    Output("price-chart-container", "className"),
     Input("symbol-dropdown", "value"),
     Input("ema", "value"),
     Input("sma", "value"),
@@ -222,6 +223,7 @@ def update_price_chart(data, symbol, ema, sma, ema_period, sma_period, theme, up
             },
             "timeScale": {"borderColor": grid_color},
         },
+        "visible",
     )
 
 

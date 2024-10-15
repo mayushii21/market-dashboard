@@ -28,6 +28,7 @@ def carousel_52_week():
 @callback(
     Output("52-week-price-chart", "figure"),
     Output("52-week-high-low-indicator", "figure"),
+    Output("52-week-chart-container", "hidden"),
     Input("symbol-dropdown", "value"),
     Input(ThemeChangerAIO.ids.radio("theme"), "value"),
     Input("update-state", "data"),
@@ -145,4 +146,4 @@ def update_52_week_charts(data, symbol, theme, update):
         showlegend=False,
     )
 
-    return fig, fig2
+    return (fig, fig2, False)

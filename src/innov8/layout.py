@@ -59,6 +59,7 @@ def layout() -> dbc.Container:
                             html.Div(
                                 price_chart(),
                                 id="price-chart-container",
+                                className="invisible",  # hidden on initial load
                             ),
                             # This row stores the theme changer component and indicators
                             dbc.Row(
@@ -99,6 +100,7 @@ def layout() -> dbc.Container:
                             html.Div(
                                 carousel_52_week(),
                                 id="52-week-chart-container",
+                                hidden=True,  # hidden on initial load
                             ),
                         ],
                         width=3,  # -''-
@@ -111,7 +113,12 @@ def layout() -> dbc.Container:
         ],
         fluid=True,
         class_name="dbc",
-        style={"height": "100%", "width": "100%", "margin": 0, "overflow": "hidden"},
+        style={
+            "height": "100%",
+            "width": "100%",
+            "margin": 0,
+            "overflow": "hidden",
+        },
     )
 
 
