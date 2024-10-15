@@ -6,6 +6,15 @@ from dash import Input, Output, State, ctx, no_update
 
 from innov8.decorators.data_access import callback, data_access
 
+default_style = {
+    "height": "37px",
+    "width": "100%",
+    "min-width": "fit-content",
+    "display": "flex",
+    "justifyContent": "center",
+    "alignItems": "center",
+}
+
 
 def forecast_button() -> dbc.Button:
     return dbc.Button(
@@ -13,7 +22,7 @@ def forecast_button() -> dbc.Button:
         children="Forecast",
         outline=True,
         color="success",
-        style={"height": "37px", "width": "100%", "min-width": "min-content"},
+        style=default_style,
     )
 
 
@@ -32,7 +41,7 @@ def forecast_button() -> dbc.Button:
 )
 @data_access
 def update_price_chart_w_forecast(data, button, series_data, symbol, _) -> Any:
-    style = {"height": "37px", "width": "100%", "min-width": "min-content"}
+    style = default_style.copy()
 
     # On initial render or ticker switch
     if ctx.triggered_id != "forecast-button" or ctx.triggered_id == "update-state":
