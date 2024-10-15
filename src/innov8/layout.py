@@ -9,6 +9,7 @@ from innov8.components import (
     dropdown_2,
     ema_switch,
     forecast_button,
+    initial_load,
     intra_sector_data,
     price_card,
     price_chart,
@@ -27,6 +28,7 @@ def layout() -> dbc.Container:
     data.load_main_table(force_update=False)
     return dbc.Container(
         [
+            initial_load(),
             # A carousel for 10 tickers with the largest absolute change occupying the topmost row
             dbc.Row([dbc.Col([carousel()], width=12)]),
             dbc.Row(
