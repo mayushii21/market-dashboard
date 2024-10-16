@@ -82,23 +82,16 @@ def update_main_carousel(data, update):
         html.Div(
             [
                 # Ticker symbol
-                html.Span(
-                    symbol,
-                    style={
-                        "marginRight": "1em",
-                        "fontSize": "1.1em",
-                    },
-                ),
+                html.Span(symbol),
                 # Change (colored)
                 html.Span(
                     f"{'+' if change > 0 else ''}{change:.2f}%",
                     style={
+                        "margin-left": "10px",
                         "color": "green" if change > 0 else "red",
-                        "fontSize": "1.1em",
                     },
                 ),
             ],
-            style={"height": "2em", "display": "flex", "alignItems": "center"},
         )
         for symbol, change in data.cur.execute(change_query)
     ]

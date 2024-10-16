@@ -6,15 +6,6 @@ from dash import Input, Output, State, ctx, no_update
 
 from innov8.decorators.data_access import callback, data_access
 
-default_style = {
-    "height": "37px",
-    "width": "100%",
-    "min-width": "fit-content",
-    "display": "flex",
-    "justifyContent": "center",
-    "alignItems": "center",
-}
-
 
 def forecast_button() -> dbc.Button:
     return dbc.Button(
@@ -22,7 +13,7 @@ def forecast_button() -> dbc.Button:
         children="Forecast",
         outline=True,
         color="success",
-        style=default_style,
+        className="row-option flex-center",
     )
 
 
@@ -42,14 +33,12 @@ def forecast_button() -> dbc.Button:
 )
 @data_access
 def update_price_chart_w_forecast(data, button, series_data, symbol) -> Any:
-    style = default_style.copy()
-
     output = {
         "series_data": no_update,
         "forecast_button_disabled": False,
         "forecast_button_clicks": no_update,
         "forecast_button_color": "success",
-        "forecast_button_style": style,
+        "forecast_button_style": {},
     }
 
     # Reset the button
@@ -67,7 +56,9 @@ def update_price_chart_w_forecast(data, button, series_data, symbol) -> Any:
     output |= {"forecast_button_color": color}
     match button:
         case 2 | 4:
-            style |= {"filter": "hue-rotate(-7deg) contrast(1.05) brightness(0.75)"}
+            output["forecast_button_style"] |= {
+                "filter": "hue-rotate(-7deg) contrast(1.05) brightness(0.75)"
+            }
 
     date = series_data[0][-1]["time"]
 

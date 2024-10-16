@@ -79,5 +79,5 @@ theme_changer = ThemeChangerAIO(
         "value": dbc.themes.CYBORG,
         "persistence": True,
     },
-    button_props={"style": {"height": "37px"}},
+    button_props={"class_name": "row-option flex-center"},
 )

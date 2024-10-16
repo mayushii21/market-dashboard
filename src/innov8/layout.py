@@ -65,21 +65,6 @@ def layout() -> dbc.Container:
                             dbc.Row(
                                 [
                                     dbc.Col(theme_changer, width=2),
-                                    # dbc.Col(
-                                    #     dbc.DropdownMenu(
-                                    #         children=[
-                                    #             ema_switch(),
-                                    #             sma_switch(),
-                                    #         ],
-                                    #         label="Technical Indicators",
-                                    #         id="indicators",
-                                    #         direction="up",
-                                    #         align_end=True,
-                                    #         color="transparent",
-                                    #         style={"height": "37px", "all": "unset"},
-                                    #     ),
-                                    #     width="auto",
-                                    # ),
                                     dbc.Col(
                                         ema_switch(), width={"size": 3, "offset": 3}
                                     ),
@@ -113,12 +98,6 @@ def layout() -> dbc.Container:
         ],
         fluid=True,
         class_name="dbc",
-        style={
-            "height": "100%",
-            "width": "100%",
-            "margin": 0,
-            "overflow": "hidden",
-        },
     )
 
 

@@ -39,16 +39,14 @@ def ema_switch() -> dbc.InputGroup:
         [
             dbc.InputGroupText(
                 dbc.Checklist(
-                    ["EMA"], id="ema", value=["EMA"], switch=True, persistence=True
+                    ["EMA"],
+                    id="ema",
+                    value=["EMA"],
+                    switch=True,
+                    persistence=True,
+                    input_class_name="position-absolute",
                 ),
-                style={
-                    "height": "37px",
-                    "display": "flex",
-                    "justifyContent": "center",
-                    "alignItems": "center",
-                    # "borderRadius": "0",
-                },
-                class_name="btn btn-outline-secondary",
+                class_name="row-option width-reset flex-center btn btn-outline-secondary",
             ),
             dbc.Input(
                 id="ema-period",
@@ -59,10 +57,7 @@ def ema_switch() -> dbc.InputGroup:
                 step=1,
                 value=9,
                 persistence=True,
-                style={
-                    "paddingLeft": 10,
-                    # "borderRadius": "0"
-                },
+                class_name="row-option",
             ),
         ],
     )
@@ -74,16 +69,14 @@ def sma_switch() -> dbc.InputGroup:
         [
             dbc.InputGroupText(
                 dbc.Checklist(
-                    ["SMA"], id="sma", value=["SMA"], switch=True, persistence=True
+                    ["SMA"],
+                    id="sma",
+                    value=["SMA"],
+                    switch=True,
+                    persistence=True,
+                    input_class_name="position-absolute",
                 ),
-                style={
-                    "height": "37px",
-                    "display": "flex",
-                    "justifyContent": "center",
-                    "alignItems": "center",
-                    # "borderRadius": "0",
-                },
-                class_name="btn btn-outline-secondary",
+                class_name="row-option width-reset flex-center btn btn-outline-secondary",
             ),
             dbc.Input(
                 id="sma-period",
@@ -94,10 +87,7 @@ def sma_switch() -> dbc.InputGroup:
                 step=1,
                 value=50,
                 persistence=True,
-                style={
-                    "paddingLeft": 10,
-                    # "borderRadius": "0"
-                },
+                class_name="row-option",
             ),
         ],
     )
@@ -163,9 +153,9 @@ def update_price_chart(data, symbol, ema, sma, ema_period, sma_period, theme, up
     theme_name = template_from_url(theme)
 
     template = plotly.io.templates[theme_name]
-    text_color = template["layout"]["font"]["color"]
+    text_color = template["layout"]["font"]["color"]  # type: ignore
     # bg_color = template["layout"]["plot_bgcolor"]
-    grid_color = template["layout"]["scene"]["xaxis"]["gridcolor"]
+    grid_color = template["layout"]["scene"]["xaxis"]["gridcolor"]  # type: ignore
 
     def plot_line(indicator) -> None:
         # Plot indicator line

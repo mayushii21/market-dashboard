@@ -37,3 +37,75 @@
     }
 }
 
+.container-fluid {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    overflow: hidden;
+}
+
+.flex-center {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
+
+.row-option {
+    height: 37px !important;
+    width: 100%;
+    min-width: fit-content;
+}
+
+.width-reset {
+    width: initial !important;
+    min-width: initial !important;
+}
+
+#update-dropdown {
+    min-width: 8em;
+}
+
+#ticker-symbol {
+    text-align: left;
+    margin-top: 0;
+    margin-bottom: -7px;
+    font-size: 3em;
+}
+
+#ticker-name {
+    font-size: 1em;
+    text-align: left;
+    margin-bottom: -7px;
+}
+
+#ticker-price {
+    font-size: 2.3em;
+    text-align: right;
+    margin-bottom: -7px;
+}
+
+#ticker-change {
+    font-size: 1.2em;
+    text-align: right;
+    margin-bottom: -3px;
+}
+
+#exchange-name {
+    text-align: left;
+    font-size: 1.3em;
+    margin-bottom: -3px;
+}
+
+#economic-sector {
+    text-align: left;
+    font-size: 1.3em;
+    margin-bottom: 0.5em;
+}
+
+.invisible {
+    visibility: hidden;
+}
+
+.visible {
+    visibility: visible;
+}

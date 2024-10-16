@@ -26,10 +26,10 @@ def dropdown_1(data):
         options=[sector[0] for sector in data.cur.execute(sector_query)],
         value="Technology",
         id="sector-dropdown",
-        style={"height": "37px"},
         # placeholder="Select Economic Sector",
         clearable=False,
         persistence=True,  # user interaction local persistence
+        className="row-option",
     )
 
 
@@ -39,10 +39,10 @@ def dropdown_2():
         # options will be filled by callback
         # Default ticker - first ticker of sector, chosen by callback
         id="symbol-dropdown",
-        style={"height": "37px"},
         # placeholder="Select Ticker Symbol",
         clearable=False,
         persistence=True,  # user interaction local persistence
+        className="row-option",
     )
 
 
