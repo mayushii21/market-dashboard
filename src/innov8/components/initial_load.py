@@ -1,7 +1,7 @@
 from typing import Any
 
 from dash import html
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 
 from innov8.decorators.data_access import callback
 
@@ -13,8 +13,10 @@ def initial_load() -> html.Div:
 
 @callback(
     Output("initial-load", "className"),
-    Input("52-week-price-chart", "figure"),
-    Input("52-week-high-low-indicator", "figure"),
+    State("52-week-price-chart", "figure"),
+    State("52-week-high-low-indicator", "figure"),
+    State("main-carousel", "children"),
+    Input("initial-load", "className"),
 )
 def disable_spinner(*args: Any, **kwargs: Any) -> Any:
     """Disable spinner when the last loaded charts are ready and enable main chart visibility"""
