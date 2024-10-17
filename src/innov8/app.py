@@ -14,7 +14,17 @@ background_callback_manager = DiskcacheManager(cache)
 
 app = Dash(
     __name__,
-    external_stylesheets=[default_theme, dbc_css],
+    external_scripts=[
+        {"src": "https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"},
+    ],
+    external_stylesheets=[
+        default_theme,
+        dbc_css,
+        {
+            "rel": "stylesheet",
+            "href": "https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css",
+        },
+    ],
     title="innov8finance",
     background_callback_manager=background_callback_manager,
     suppress_callback_exceptions=True,

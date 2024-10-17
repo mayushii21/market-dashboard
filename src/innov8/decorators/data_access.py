@@ -22,3 +22,4 @@ def data_access(func: Callable[Concatenate[Any, P], R]) -> Callable[P, R]:
 
 # For convenience
 callback = app.callback
+clientside_callback = app.clientside_callback

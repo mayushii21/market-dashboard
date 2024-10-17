@@ -5,7 +5,7 @@
 groups = ["default", "test"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.4.2"
-content_hash = "sha256:1ca99bab482fe38b3db562e7dc1335fff1897af0fe3fafa7ba0def98e35abe4c"
+content_hash = "sha256:f9f4df568f0713f0a410c9cb1dc8cb4b42081cf56e91056fdbc2ea37c5ed5f4b"
 
 [[package]]
 name = "beautifulsoup4"
@@ -296,15 +296,6 @@ groups = ["default"]
 files = [
     {file = "dash_table-5.0.0-py3-none-any.whl", hash = "sha256:19036fa352bb1c11baf38068ec62d172f0515f73ca3276c79dee49b95ddc16c9"},
     {file = "dash_table-5.0.0.tar.gz", hash = "sha256:18624d693d4c8ef2ddec99a6f167593437a7ea0bf153aa20f318c170c5bc7308"},
-]
-
-[[package]]
-name = "dash-trich-components"
-version = "1.0.0"
-summary = "Trich.ai components library for Dash Plotly"
-groups = ["default"]
-files = [
-    {file = "dash_trich_components-1.0.0.tar.gz", hash = "sha256:453b2b7d201190fa250925a05978e2eeec8a9d03b8c12b95867e6e6a4ea11b24"},
 ]
 
 [[package]]

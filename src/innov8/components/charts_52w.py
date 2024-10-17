@@ -1,26 +1,31 @@
-import dash_trich_components as dtc
 import plotly.graph_objects as go
-from dash import dcc
-from dash.dependencies import Input, Output
+from dash import dcc, html
+from dash.dependencies import Input, Output, State
 from dash_bootstrap_templates import ThemeChangerAIO, template_from_url
 
-from innov8.decorators.data_access import callback, data_access
+from innov8.decorators.data_access import callback, clientside_callback, data_access
 
 
 # Carousel showing 52-week data
-def carousel_52_week():
-    return dtc.Carousel(
-        [
-            dcc.Graph(id="52-week-price-chart"),
-            dcc.Graph(id="52-week-high-low-indicator"),
-        ],
-        slides_to_show=1,
-        autoplay=True,
-        speed=4000,
-        style={"height": 300, "width": 370, "paddingBottom": "6px"},
-        responsive=[
-            {"breakpoint": 9999, "settings": {"arrows": False}},
-        ],
+def carousel_52_week() -> html.Div:
+    return html.Div(
+        html.Div(
+            className="swiper-wrapper",
+            children=[
+                dcc.Graph(
+                    id="52-week-price-chart",
+                    responsive=True,
+                    className="swiper-slide",
+                ),
+                dcc.Graph(
+                    id="52-week-high-low-indicator",
+                    responsive=True,
+                    className="swiper-slide",
+                ),
+            ],
+        ),
+        id="weekly-charts-carousel",
+        className="swiper weeklySwiper",
     )
 
 
@@ -34,7 +39,7 @@ def carousel_52_week():
     Input("update-state", "data"),
 )
 @data_access
-def update_52_week_charts(data, symbol, theme, update):
+def update_52_week_charts(data, symbol, theme, _):
     # Filter data by ticker symbol
     ticker = data.main_table[data.main_table.symbol == symbol].set_index("date")
 
@@ -147,3 +152,26 @@ def update_52_week_charts(data, symbol, theme, update):
     )
 
     return (fig, fig2, False)
+
+
+clientside_callback(
+    """
+    function initializeWeeklySwiper(id) {
+        var swiper = new Swiper(".weeklySwiper", {
+            slidesPerView: 1,
+            autoplay: {
+                delay: 3000,
+                disableOnInteraction: false,
+                pauseOnMouseEnter: true,
+            },
+            observer: true,
+            cssMode: false,
+        });
+
+        return window.dash_clientside.no_update;
+    }
+    """,
+    Output("weekly-charts-carousel", "id"),
+    Input("initial-load", "className"),
+    State("52-week-chart-container", "hidden"),
+)
