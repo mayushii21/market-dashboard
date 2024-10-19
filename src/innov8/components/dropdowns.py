@@ -3,27 +3,12 @@ from dash.dependencies import Input, Output
 
 from innov8.decorators.data_access import callback, data_access
 
-# list all sectors
-sector_query = """
-SELECT name
-FROM sector
-ORDER BY name
-"""
-# list ticker symbols in sector
-symbols_query = """
-SELECT symbol
-FROM ticker t
-    JOIN sector s ON s.id = t.sector_id
-WHERE s.name = ?
-ORDER BY symbol
-"""
-
 
 # The economic sectors dropdown
 @data_access
 def dropdown_1(data):
     return dcc.Dropdown(
-        options=[sector[0] for sector in data.cur.execute(sector_query)],
+        options=sorted(data.main_table["sector"].unique().tolist()),
         value="Technology",
         id="sector-dropdown",
         # placeholder="Select Economic Sector",
@@ -55,5 +40,9 @@ def dropdown_2():
 @data_access
 def update_symbols_dropdown(data, sector):
     # Select ticker symbols from selected sector
-    options = [symbol[0] for symbol in data.cur.execute(symbols_query, (sector,))]
+    options = sorted(
+        data.main_table.loc[data.main_table["sector"] == sector, "symbol"]
+        .unique()
+        .tolist()
+    )
     return options, options[0]
