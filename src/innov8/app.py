@@ -25,6 +25,7 @@ app = Dash(
             "href": "https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css",
         },
     ],
+    meta_tags=[{"name": "viewport", "content": "width=device-width, initial-scale=1"}],
     title="innov8finance",
     background_callback_manager=background_callback_manager,
     suppress_callback_exceptions=True,
