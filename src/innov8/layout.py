@@ -28,76 +28,41 @@ def layout() -> dbc.Container:
     data.load_main_table(force_update=False)
     return dbc.Container(
         [
-            initial_load(),
             # A carousel for 10 tickers with the largest absolute change occupying the topmost row
-            dbc.Row([dbc.Col([carousel()], width=12)]),
-            dbc.Row(
-                [
-                    # This first column occupies all available width - 370px (for the second column)
-                    dbc.Col(
-                        [
-                            # This row holds the dropdowns responsible for sector and ticker selection and the update button
-                            dbc.Row(
-                                [
-                                    dbc.Col([dropdown_1()], width=4),
-                                    dbc.Col([dropdown_2()], width=3),
-                                    dbc.Col(
-                                        [
-                                            dcc.Loading(
-                                                [update_button(), update_state()],
-                                                type="dot",
-                                            )
-                                        ],
-                                        width={"size": 3},
-                                    ),
-                                    dbc.Col([forecast_button()], width=1),
-                                ],
-                                class_name="mb-1 g-0",
-                                justify="between",
-                            ),
-                            # This row contains the main price (candlestick) chart
-                            html.Div(
-                                price_chart(),
-                                id="price-chart-container",
-                                className="invisible",  # hidden on initial load
-                            ),
-                            # This row stores the theme changer component and indicators
-                            dbc.Row(
-                                [
-                                    dbc.Col(theme_changer, width=2),
-                                    dbc.Col(
-                                        ema_switch(), width={"size": 3, "offset": 3}
-                                    ),
-                                    dbc.Col(sma_switch(), width=3),
-                                ],
-                                justify="between",
-                                class_name="mb-1 g-0",
-                            ),
-                        ],
-                        width=9,  # investigate why this is needed later
-                        style={"width": "calc(100% - 370px)"},
-                    ),
-                    # This column occupies 370px of the dashboard's width
-                    dbc.Col(
-                        [
-                            dbc.Row([dbc.Col([price_card()], width=12)]),
-                            dbc.Row([dbc.Col([table_info()], width=12)]),
-                            html.Div(
-                                carousel_52_week(),
-                                id="52-week-chart-container",
-                                hidden=True,  # hidden on initial load
-                            ),
-                        ],
-                        width=3,  # -''-
-                        style={"width": "370px"},
-                    ),
-                ],
-                # class_name="g-0",  # remove gutters
+            carousel(),
+            dropdown_1(),
+            dropdown_2(),
+            html.Div(
+                dcc.Loading(
+                    [update_button(), update_state()],
+                    type="dot",
+                ),
+                id="update-button-container",
+            ),
+            forecast_button(),
+            html.Div(
+                price_chart(),
+                id="price-chart-container",
+                className="invisible",  # hidden on initial load
+            ),
+            # This row stores the theme changer component and indicators
+            theme_changer,
+            ema_switch(),
+            sma_switch(),
+            price_card(),
+            table_info(),
+            html.Div(
+                carousel_52_week(),
+                id="weekly-charts-container",
+                hidden=True,  # hidden on initial load
             ),
             intra_sector_data(),
+            initial_load(),
+            html.Div(className="blur top row-option"),
+            html.Div(className="blur bottom row-option"),
         ],
         fluid=True,
-        class_name="dbc",
+        className="dbc grid-container",
     )
 
 

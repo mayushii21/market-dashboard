@@ -37,11 +37,17 @@
     }
 }
 
+:root {
+    --row-height: 37px;
+    --gap: 10px;
+}
+
 .container-fluid {
     height: 100%;
     width: 100%;
     margin: 0;
-    overflow: hidden;
+    /* overflow: hidden; */
+    /* enabling this disables sticky */
 }
 
 .flex-center {
@@ -51,7 +57,7 @@
 }
 
 .row-option {
-    height: 37px !important;
+    height: var(--row-height) !important;
     width: 100%;
     min-width: fit-content;
 }
@@ -61,45 +67,42 @@
     min-width: initial !important;
 }
 
-#update-dropdown {
-    min-width: 8em;
-}
-
 #ticker-symbol {
     text-align: left;
     margin-top: 0;
-    margin-bottom: -7px;
-    font-size: 3em;
+    margin-bottom: 0px;
+    font-size: 2em;
+    line-height: 1em;
 }
 
 #ticker-name {
-    font-size: 1em;
+    font-size: 0.8em;
     text-align: left;
     margin-bottom: -7px;
 }
 
 #ticker-price {
-    font-size: 2.3em;
+    font-size: 1.7em;
     text-align: right;
     margin-bottom: -7px;
 }
 
 #ticker-change {
-    font-size: 1.2em;
+    font-size: 1em;
     text-align: right;
     margin-bottom: -3px;
 }
 
 #exchange-name {
     text-align: left;
-    font-size: 1.3em;
+    font-size: 0.8em;
     margin-bottom: -3px;
 }
 
 #economic-sector {
     text-align: left;
-    font-size: 1.3em;
-    margin-bottom: 0.5em;
+    font-size: 0.8em;
+    margin-bottom: 0px;
 }
 
 .invisible {
@@ -108,4 +111,104 @@
 
 .visible {
     visibility: visible;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-rows: calc(var(--row-height) - var(--gap)) var(--row-height) auto 1fr 1fr var(--row-height);
+    gap: var(--gap);
+    height: 100vh;
+    padding-bottom: calc(var(--gap) / 2);
+
+    /* Define named grid areas */
+    grid-template-areas:
+        "swiper swiper swiper swiper swiper swiper swiper swiper swiper swiper swiper swiper"
+        "sector sector sector ticker ticker update update forecast forecast info info info"
+        "chart chart chart chart chart chart chart chart chart info info info"
+        "chart chart chart chart chart chart chart chart chart table table table"
+        "chart chart chart chart chart chart chart chart chart weekly weekly weekly"
+        "theme theme . . . ema ema sma sma weekly weekly weekly";
+}
+
+.mainSwiper {
+    grid-area: swiper;
+    position: sticky;
+    top: 0;
+    z-index: 999;
+
+    width: 100%;
+    overflow: hidden;
+    margin-bottom: calc(var(--gap) * -1);
+}
+
+#sector-dropdown {
+    grid-area: sector;
+}
+
+#symbol-dropdown {
+    grid-area: ticker;
+}
+
+#update-button-container {
+    grid-area: update;
+}
+
+#update-button {
+    width: auto;
+}
+
+#update-dropdown {
+    min-width: 13ch;
+}
+
+#forecast-button {
+    grid-area: forecast;
+}
+
+#price-chart-container {
+    grid-area: chart;
+}
+
+#theme-container {
+    grid-area: theme;
+}
+
+#ema-input-group {
+    grid-area: ema;
+}
+
+#sma-input-group {
+    grid-area: sma;
+}
+
+#ticker-data {
+    grid-area: info;
+}
+
+#intra-sector-container {
+    grid-area: table;
+    height: 100%;
+}
+
+#intra-sector-container {
+    grid-area: table;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+#correlation-table {
+    flex: 1;
+    overflow-y: auto;
+}
+
+#weekly-charts-container {
+    grid-area: weekly;
+}
+
+.blur {
+    display: none;
+}
+
 }
