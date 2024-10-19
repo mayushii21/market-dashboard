@@ -52,12 +52,12 @@ def table_info():
     return html.Div(
         [
             html.P(
-                "Intra-sector Data Table",
+                "Intra-sector Table",
                 style={
                     "textAlign": "center",
                     "display": "block",
                     "marginBottom": "0.5em",
-                    "fontSize": "1.2em",
+                    "fontSize": "1em",
                 },
             ),
             dash_table.DataTable(
@@ -75,16 +75,11 @@ def table_info():
                     },
                     {"if": {"column_id": ["price", "90-day corr"]}, "width": "30%"},
                 ],
-                style_header={"backgroundColor": "rgba(0,0,0,0)"},
                 style_data={"backgroundColor": "rgba(0,0,0,0)"},
-                style_table={
-                    # "height": "calc(100vh)",
-                    "height": "calc(100vh - 2em - (10.6em * 1.5) - 1.7em - 300px)",
-                    "overflowY": "auto",
-                },
                 style_as_list_view=True,
             ),
-        ]
+        ],
+        id="intra-sector-container",
     )
 
 
