@@ -60,7 +60,7 @@ def update_main_carousel(data, _) -> list[html.Div]:
                 html.Span(
                     f"{'+' if change > 0 else ''}{change:.2f}%",
                     style={
-                        "margin-left": "10px",
+                        "marginLeft": "10px",
                         "color": "green" if change > 0 else "red",
                     },
                 ),

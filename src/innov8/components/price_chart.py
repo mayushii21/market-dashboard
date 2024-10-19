@@ -28,7 +28,7 @@ OPACITY = 0.5
 def price_chart() -> dash_tvlwc.Tvlwc:
     return dash_tvlwc.Tvlwc(
         id="tv-price-chart",
-        height="calc(100vh - 2em - 83px)",
+        height="100%",
         width="100%",
     )
 
@@ -60,6 +60,7 @@ def ema_switch() -> dbc.InputGroup:
                 class_name="row-option",
             ),
         ],
+        id="ema-input-group",
     )
 
 
@@ -90,6 +91,7 @@ def sma_switch() -> dbc.InputGroup:
                 class_name="row-option",
             ),
         ],
+        id="sma-input-group",
     )
 
 

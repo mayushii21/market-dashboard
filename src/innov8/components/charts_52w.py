@@ -23,9 +23,17 @@ def carousel_52_week() -> html.Div:
                     className="swiper-slide",
                 ),
             ],
+            style={
+                "height": "100%",
+                "width": "200%",
+            },
         ),
         id="weekly-charts-carousel",
         className="swiper weeklySwiper",
+        style={
+            "height": "100%",
+            "width": "100%",
+        },
     )
 
 
@@ -33,7 +41,7 @@ def carousel_52_week() -> html.Div:
 @callback(
     Output("52-week-price-chart", "figure"),
     Output("52-week-high-low-indicator", "figure"),
-    Output("52-week-chart-container", "hidden"),
+    Output("weekly-charts-container", "hidden"),
     Input("symbol-dropdown", "value"),
     Input(ThemeChangerAIO.ids.radio("theme"), "value"),
     Input("update-state", "data"),
@@ -173,5 +181,5 @@ clientside_callback(
     """,
     Output("weekly-charts-carousel", "id"),
     Input("initial-load", "className"),
-    State("52-week-chart-container", "hidden"),
+    State("weekly-charts-container", "hidden"),
 )

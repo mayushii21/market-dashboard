@@ -17,7 +17,7 @@ def update_button() -> dbc.ButtonGroup:
             dbc.Button(
                 id="update-button",
                 outline=True,
-                className="row-option flex-center",
+                className="btn-sm row-option flex-center",
             ),
             dcc.Dropdown(
                 options=[
