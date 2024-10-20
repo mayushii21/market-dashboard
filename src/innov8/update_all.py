@@ -13,6 +13,7 @@ from innov8.db_ops import data
 def main() -> None:
     logger.configure(handlers=[{"sink": sys.stderr, "level": "INFO"}])
 
+    assert data.main_table
     symbols = data.main_table.symbol.unique()
     logger.info("Updating all...")
     for symbol in tqdm(symbols):
