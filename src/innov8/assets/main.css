@@ -118,7 +118,7 @@
     grid-template-columns: repeat(12, minmax(0, 1fr));
     grid-template-rows: calc(var(--row-height) - var(--gap)) var(--row-height) auto 1fr 1fr var(--row-height);
     gap: var(--gap);
-    height: 100vh;
+    height: 100dvh;
     padding-bottom: calc(var(--gap) / 2);
 
     /* Define named grid areas */
@@ -234,9 +234,9 @@
         padding-left: var(--gap) !important;
         padding-right: var(--gap) !important;
         padding-bottom: 0;
-        height: calc(200vh - (var(--row-height) * 2));
+        height: calc(200dvh - (var(--row-height) * 2));
         grid-template-columns: 1fr 1fr 1fr 1fr;
-        grid-template-rows: var(--row-height) var(--row-height) auto minmax(0, 1fr) var(--row-height) repeat(2, calc((100vh - (var(--row-height) * 2) - (var(--gap) * 3)) / 2)) var(--row-height);
+        grid-template-rows: var(--row-height) var(--row-height) auto minmax(0, 1fr) var(--row-height) repeat(2, calc((100dvh - (var(--row-height) * 2) - (var(--gap) * 3)) / 2)) var(--row-height);
         gap: 10px;
         grid-template-areas:
             "swiper swiper swiper swiper"
