@@ -1,4 +1,5 @@
-from dash import html
+from dash import html, no_update
+from dash._callback import NoUpdate
 from dash.dependencies import Input, Output, State
 
 from innov8.decorators.data_access import callback, clientside_callback, data_access
@@ -37,6 +38,7 @@ LIMIT 10
 def carousel() -> html.Div:
     return html.Div(
         html.Div(
+            children=[html.Span("Loading...")],
             className="swiper-wrapper",
             id="main-carousel",
         ),
