@@ -78,7 +78,7 @@ theme_changer = html.Div(
                     "label_id": "theme-switch-label",
                 },
             ],
-            "value": dbc.themes.CYBORG,
+            "value": dbc.themes.VAPOR,
             "persistence": True,
         },
         button_props={
