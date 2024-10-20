@@ -216,6 +216,10 @@
     align-items: center;
 }
 
+.Select-input {
+    background: transparent !important;
+}
+
 @media (max-width: 1024px) {
     html {
         font-size: 90%;

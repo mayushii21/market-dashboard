@@ -31,6 +31,7 @@ def update_button() -> dbc.ButtonGroup:
                     "borderTopLeftRadius": 0,  # squarify :]
                     "borderBottomLeftRadius": 0,
                 },
+                searchable=False,
                 clearable=False,
                 className="row-option",
             ),

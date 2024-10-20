@@ -11,7 +11,7 @@ def dropdown_1(data):
         options=sorted(data.main_table["sector"].unique().tolist()),
         value="Technology",
         id="sector-dropdown",
-        # placeholder="Select Economic Sector",
+        searchable=False,
         clearable=False,
         persistence=True,  # user interaction local persistence
         className="row-option",
@@ -24,7 +24,7 @@ def dropdown_2():
         # options will be filled by callback
         # Default ticker - first ticker of sector, chosen by callback
         id="symbol-dropdown",
-        # placeholder="Select Ticker Symbol",
+        searchable=False,
         clearable=False,
         persistence=True,  # user interaction local persistence
         className="row-option",
