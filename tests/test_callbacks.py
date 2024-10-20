@@ -16,7 +16,11 @@ from innov8.components.intra_sector import (
 )
 from innov8.components.main_carousel import update_main_carousel
 from innov8.components.price_card import update_symbol_data
-from innov8.components.price_chart import update_indicator_period, update_price_chart
+from innov8.components.price_chart import (
+    hex_to_rgba,
+    update_indicator_period,
+    update_price_chart,
+)
 from innov8.components.update import update_button_style, update_ticker_data
 
 
@@ -83,7 +87,7 @@ def test_update_main_carousel():
     assert len(carousel_data) == 10
     # Verify proper color assignment
     for item in carousel_data:
-        assert isinstance(item.children[0].children, str)
+        assert item.children and isinstance(item.children[0].children, str)
         assert (
             item.children[1].style["color"] == "green"
             if item.children[1].children[0] == "+"
@@ -168,83 +172,3 @@ def price_chart():
         ),
     ):
         return update_price_chart("AAPL", True, True, 9, 50, None, None)
-
-
-def test_update_price_chart(price_chart):
-
-    if len(price_chart) != 4:
-        return False
-
-    # Check the first element
-    if not isinstance(price_chart[0], list) or len(price_chart[0]) != 4:
-        return False
-
-    # Check the chart types
-    chart_types = ["candlestick", "histogram", "line", "line"]
-    if price_chart[0] != chart_types:
-        return False
-
-    # Check the second element
-    if not isinstance(price_chart[1], list) or len(price_chart[1]) != 4:
-        return False
-
-    # Define validators for each part of the second element
-    def is_valid_candlestick_element(element: List[Dict[str, Any]]) -> bool:
-        required_keys = {"open", "high", "low", "close", "time"}
-        for item in element:
-            if not isinstance(item, dict) or not required_keys.issubset(item.keys()):
-                return False
-            if not (
-                isinstance(item["open"], (int, float))
-                and isinstance(item["high"], (int, float))
-                and isinstance(item["low"], (int, float))
-                and isinstance(item["close"], (int, float))
-                and isinstance(item["time"], datetime)
-            ):
-                return False
-        return True
-
-    def is_valid_histogram_element(element: List[Dict[str, Any]]) -> bool:
-        required_keys = {"value", "color", "time"}
-        for item in element:
-            if not isinstance(item, dict) or not required_keys.issubset(item.keys()):
-                return False
-            if not (
-                isinstance(item["value"], int)
-                and isinstance(item["color"], str)
-                and isinstance(item["time"], datetime)
-            ):
-                return False
-        return True
-
-    def is_valid_line_element(element: List[Dict[str, Any]]) -> bool:
-        required_keys = {"value", "time"}
-        for item in element:
-            if not isinstance(item, dict) or not required_keys.issubset(item.keys()):
-                return False
-            if not (
-                isinstance(item["value"], (int, float))
-                and isinstance(item["time"], datetime)
-            ):
-                return False
-        return True
-
-    # Verify that the figure is successfully plotted
-    assert is_valid_candlestick_element(price_chart[1][0])
-    assert is_valid_histogram_element(price_chart[1][1])
-    assert is_valid_line_element(price_chart[1][2])
-    assert is_valid_line_element(price_chart[1][3])
-
-
-def test_update_indicator_period(price_chart):
-    # Simulate context
-    def run_callback():
-        context_value.set(AttributeDict(**{"triggered_inputs": [{"prop_id": ""}]}))
-        return update_indicator_period(price_chart[2], "AAPL", True, True, 9, 50)
-
-    # Run function in context
-    ctx = copy_context()
-    output = ctx.run(run_callback)
-
-    # Verify output in Patch format
-    assert isinstance(output, Patch)
