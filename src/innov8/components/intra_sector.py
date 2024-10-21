@@ -53,12 +53,7 @@ def table_info():
         [
             html.P(
                 "Intra-sector Table",
-                style={
-                    "textAlign": "center",
-                    "display": "block",
-                    "marginBottom": "0.5em",
-                    "fontSize": "1em",
-                },
+                id="intra-sector-title",
             ),
             dash_table.DataTable(
                 id="correlation-table",

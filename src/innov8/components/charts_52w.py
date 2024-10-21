@@ -23,17 +23,9 @@ def carousel_52_week() -> html.Div:
                     className="swiper-slide",
                 ),
             ],
-            style={
-                "height": "100%",
-                "width": "200%",
-            },
         ),
         id="weekly-charts-carousel",
         className="swiper weeklySwiper",
-        style={
-            "height": "100%",
-            "width": "100%",
-        },
     )
 
 

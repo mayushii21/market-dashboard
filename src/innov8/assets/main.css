@@ -207,13 +207,16 @@
 #intra-sector-container {
     grid-area: table;
     height: 100%;
-}
-
-#intra-sector-container {
-    grid-area: table;
     display: flex;
     flex-direction: column;
     min-height: 0;
+}
+
+#intra-sector-title {
+    text-align: center;
+    display: block;
+    margin-bottom: 0.5em;
+    font-size: 1em;
 }
 
 #correlation-table {
@@ -223,6 +226,16 @@
 
 #weekly-charts-container {
     grid-area: weekly;
+}
+
+#weekly-charts-carousel {
+    height: 100%;
+    width: 100%;
+}
+
+#weekly-charts-carousel>.swiper-wrapper {
+    height: 100%;
+    width: 200%;
 }
 
 .blur {
