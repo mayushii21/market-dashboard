@@ -101,7 +101,7 @@ clientside_callback(
             const carouselElement = document.getElementById("main-carousel");
 
             // Check if the carousel element exists and has children
-            if (carouselElement && carouselElement.children.length > 0) {
+            if (carouselElement && carouselElement.children.length >= 5) {
                 clearInterval(checkChildren); // Stop polling once children are found
                 initSwiper(); // Initialize Swiper
             }
