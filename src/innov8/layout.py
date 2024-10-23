@@ -10,7 +10,6 @@ from innov8.components import (
     ema_switch,
     forecast_button,
     initial_load,
-    intra_sector_data,
     price_card,
     price_chart,
     sma_switch,
@@ -56,7 +55,6 @@ def layout() -> dbc.Container:
                 id="weekly-charts-container",
                 hidden=True,  # hidden on initial load
             ),
-            intra_sector_data(),
             initial_load(),
             html.Div(className="blur top row-option"),
             html.Div(className="blur bottom row-option"),
