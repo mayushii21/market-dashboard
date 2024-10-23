@@ -74,6 +74,10 @@ class DataStore:
             self.insert_ticker_info()
             # Download data and fill date and price tables
             self.fill_ohlc()
+            self.load_main_table()
+            assert self.main_table is not None
+            for symbol in tqdm(self.main_table.symbol.unique()):
+                self.generate_forecast(symbol)
         # If the database is already populated
         else:
             self.initiate_tickers_obj(scrape=False)
@@ -275,8 +279,10 @@ class DataStore:
         ):
             try:
                 # Retrieve OHLC data for symbol
+                start_date = (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")
+                end_date = datetime.now().strftime("%Y-%m-%d")
                 ohlc_data = self.tickers.tickers[symbol[0]].history(
-                    start="2022-07-01", end="2023-07-01"
+                    start=start_date, end=end_date
                 )[["Open", "High", "Low", "Close", "Volume"]]
                 # Convert the date to a unix timestamp (remove timezone holding local time representations)
                 ohlc_data.index = (
