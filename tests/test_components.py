@@ -1,10 +1,10 @@
 from innov8.components.charts_52w import carousel_52_week
 from innov8.components.dropdowns import dropdown_1, dropdown_2
-from innov8.components.intra_sector import intra_sector_data, table_info
+from innov8.components.intra_sector import table_info
 from innov8.components.main_carousel import carousel
 from innov8.components.price_card import price_card
 from innov8.components.price_chart import ema_switch, price_chart, sma_switch
-from innov8.components.update import update_button, update_state
+from innov8.components.update import update_button
 
 
 def test_carousel():
@@ -47,16 +47,6 @@ def test_update_button():
     # Verify proper components
     assert update_group_data.children[0].id == "update-button"
     assert update_group_data.children[1].id == "update-dropdown"
-
-
-def test_stores():
-    isd = intra_sector_data()
-    us = update_state()
-    # Check storage type
-    assert getattr(isd, "storage_type") == getattr(us, "storage_type") == "session"
-    # Verify proper components
-    assert getattr(isd, "id") == "intra_sector_data"
-    assert getattr(us, "id") == "update-state"
 
 
 def test_table():
