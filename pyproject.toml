@@ -8,7 +8,7 @@ authors = [
 dependencies = [
     "dash[diskcache]==2.16.1",
     "dash-bootstrap-components",
-    "dash-bootstrap-templates==1.1.2",
+    "dash-bootstrap-templates @ git+https://github.com/mayushii21/dash-bootstrap-templates.git@cdbb4b28c8aa97f44fcc76085639d1a26d3cc247",
     "dash-tvlwc>=0.1.1",
     "requests",
     "beautifulsoup4",
