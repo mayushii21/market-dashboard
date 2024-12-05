@@ -42,4 +42,7 @@ addopts = ["--import-mode=importlib"]
 [tool.pdm]
 
 [tool.pdm.dev-dependencies]
-test = ["pytest>=8.2.2"]
+test = [
+    "pytest>=8.2.2",
+    "pytest-cov>=6.0.0",
+]
