@@ -8,8 +8,8 @@ from dash.dependencies import Input, Output
 from innov8.decorators.data_access import callback, data_access
 
 # Store intermediate values
-corr_table: pd.DataFrame = pd.DataFrame()
-price_table: pd.DataFrame = pd.DataFrame()
+corrs: dict[str, pd.DataFrame] = {}
+prices: dict[str, pd.DataFrame] = {}
 threadlock = threading.Lock()
 
 
@@ -47,7 +47,7 @@ def table_info():
 @data_access
 def calculate_table_data(data, sector) -> None:
     """Calculate intra-sector data for `correlation-table`"""
-    global corr_table, price_table
+    global corrs, prices
     # Filter by sector and select necessary columns
     sector_table = data.main_table.loc[
         data.main_table.sector == sector, ["symbol", "date", "close"]
@@ -64,13 +64,13 @@ def calculate_table_data(data, sector) -> None:
     ]
     with threadlock:
         # Pivot and calculate correlations
-        corr_table = (
+        corrs[sector] = (
             sector_table.pivot(columns="symbol", index="date", values="close")
             .corr()
             .round(3)
         )
         # Get prices of tickers in sector
-        price_table = (
+        prices[sector] = (
             sector_table.drop(columns="date").groupby("symbol").last().round(2)
         )
 
@@ -90,9 +90,9 @@ def update_intra_sector_table(sector, symbol, _):
         calculate_table_data(sector)
     with threadlock:
         # Filter intra-sector correlation data
-        filt_corr = pd.DataFrame(corr_table)[symbol].drop(symbol).to_frame()
+        filt_corr = pd.DataFrame(corrs[sector])[symbol].drop(symbol).to_frame()
         # Filter intra-sector price data
-        filt_prices = pd.DataFrame(price_table).drop(symbol)
+        filt_prices = pd.DataFrame(prices[sector]).drop(symbol)
     # Combine into a single table
     table = (
         filt_prices.join(filt_corr)
