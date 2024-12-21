@@ -1,24 +1,17 @@
-import unittest.mock
-from contextvars import copy_context
-from datetime import datetime
-from typing import Any, Dict, List
+from unittest.mock import patch
 
 import pytest
-from dash import Patch
-from dash._callback_context import context_value
-from dash._utils import AttributeDict
 
 from innov8.components.charts_52w import update_52_week_charts
 from innov8.components.dropdowns import update_symbols_dropdown
 from innov8.components.intra_sector import (
     calculate_table_data,
+    corrs,
     update_intra_sector_table,
 )
 from innov8.components.main_carousel import update_main_carousel
 from innov8.components.price_card import update_symbol_data
 from innov8.components.price_chart import (
-    hex_to_rgba,
-    update_indicator_period,
     update_price_chart,
 )
 from innov8.components.update import update_button_style, update_ticker_data
@@ -106,26 +99,38 @@ def test_update_symbol_data():
 
 # Fixture with calculated correlation table data
 @pytest.fixture(scope="module")
-def calculated_table_data():
-    return calculate_table_data("Technology", None)
+def calculated_table_data() -> None:
+    return calculate_table_data("Technology")
 
 
-def test_calculate_table_data(calculated_table_data):
-    # Check that proper sector selected with expected symbols
-    assert {"AAPL", "ACN", "ADBE", "ADI", "ADSK"}.issubset(
-        calculated_table_data[1]["close"]
-    )
-    # Verify that correlation is calculated between all symbols of the sector
-    symbols = calculate_table_data("Technology", None)[0].keys()
-    for symbol in symbols:
-        assert symbols == calculated_table_data[0][symbol].keys()
-        assert calculated_table_data[0][symbol][symbol] == 1
+def test_calculate_table_data(calculated_table_data: None):
+    df = corrs["Technology"]
+
+    # Check that the correlation matrix is symmetric:
+    # correlation(sym1, sym2) should equal correlation(sym2, sym1)
+    for sym1 in df.columns:
+        for sym2 in df.index:
+            assert df.loc[sym1, sym2] == pytest.approx(
+                df.loc[sym2, sym1]
+            ), f"Matrix is not symmetric: {sym1}/{sym2} != {sym2}/{sym1}"
+
+    # Check that all expected symbols are present
+    symbols_to_check = {"AAPL", "AMD", "EPAM", "IBM", "MSFT", "NVDA"}
+    missing_in_symbols = symbols_to_check - set(df.index)
+    assert not missing_in_symbols, f"Missing symbols in rows: {missing_in_symbols}"
 
 
-def test_update_intra_sector_table(calculated_table_data):
-    output = update_intra_sector_table("AAPL", calculated_table_data)
-    # Proper table columns
-    assert list(output[0].keys()) == ["symbol", "price", "90-day corr"]
+def test_update_intra_sector_table():
+    # dash.callback_context.triggered_prop_ids is only available from a callback!
+    with patch(
+        "innov8.components.intra_sector.callback_context"
+    ) as mock_callback_context:
+        mock_callback_context.triggered_prop_ids = {
+            "symbol-dropdown.value": "symbol-dropdown"
+        }
+
+        output = update_intra_sector_table("Technology", "AAPL", None)
+        assert list(output[0].keys()) == ["symbol", "price", "90-day corr"]
 
 
 # Define the mocked behavior for template_from_url
@@ -140,7 +145,7 @@ def mock_template_hex_color(url):
 
 def test_update_52_week_charts():
     # Use unittest.mock.patch to replace the template_from_url function with the mock
-    with unittest.mock.patch(
+    with patch(
         "innov8.components.charts_52w.template_from_url",
         side_effect=mock_template_from_url,
     ):
@@ -155,20 +160,20 @@ def test_update_52_week_charts():
 def price_chart():
     # Use unittest.mock.patch to replace the template_from_url function with the mock
     with (
-        unittest.mock.patch(
+        patch(
             "innov8.components.price_chart.template_from_url",
             side_effect=mock_template_from_url,
         ),
-        unittest.mock.patch(
+        patch(
             "plotly.io.templates",
             new={
                 "plotly": {
                     "layout": {
-                        "scene": {"xaxis": {"gridcolor": "#123456"}},  # Valid hex color
+                        "scene": {"xaxis": {"gridcolor": "#123456"}},
                         "font": {"color": "#123456"},
                     }
                 }
-            },  # Valid hex color
+            },
         ),
     ):
         return update_price_chart("AAPL", True, True, 9, 50, None, None)
