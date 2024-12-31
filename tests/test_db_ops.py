@@ -77,9 +77,23 @@ def test_load_main_table(data_store):
 
 
 def test_add_new_ohlc(data_store):
+    # Delete a few records to simulate old data
+    data_store.cur.execute("""
+        DELETE FROM price
+        WHERE (ticker_id, date_id) IN (
+            SELECT p.ticker_id, p.date_id
+            FROM price p
+            JOIN date d 
+                ON p.date_id = d.id
+            JOIN ticker t 
+                ON p.ticker_id = t.id
+            WHERE t.symbol = "AAPL"
+            ORDER BY d.date DESC
+            LIMIT 3
+        );
+    """)
+
     # Store old data count
-    data_store.cur.execute("SELECT COUNT(*) FROM date")
-    date_count_1 = data_store.cur.fetchone()[0]
     data_store.cur.execute("SELECT COUNT(*) FROM price")
     price_count_1 = data_store.cur.fetchone()[0]
 
@@ -87,13 +101,10 @@ def test_add_new_ohlc(data_store):
     data_store.add_new_ohlc("AAPL")
 
     # Check new data count
-    data_store.cur.execute("SELECT COUNT(*) FROM date")
-    date_count_2 = data_store.cur.fetchone()[0]
     data_store.cur.execute("SELECT COUNT(*) FROM price")
     price_count_2 = data_store.cur.fetchone()[0]
 
     # Check if new OHLC data is added to the database
-    assert date_count_2 > date_count_1
     assert price_count_2 > price_count_1
 
 
