@@ -2,7 +2,7 @@ import sys
 
 import numpy as np
 
-np.float_ = np.float64
+np.float_ = np.float64  # type: ignore
 
 from loguru import logger
 from tqdm import tqdm
@@ -13,6 +13,7 @@ from innov8.db_ops import data
 def main() -> None:
     logger.configure(handlers=[{"sink": sys.stderr, "level": "INFO"}])
 
+    assert data.main_table is not None
     symbols = data.main_table.symbol.unique()
     logger.info("Updating all...")
     for symbol in tqdm(symbols):

@@ -7,7 +7,7 @@ from loguru import logger
 from tqdm import tqdm
 
 from innov8 import update_all
-from innov8.components.decorators import callback, data_access
+from innov8.decorators.data_access import callback, data_access
 
 
 # Button with scope dropdown
@@ -17,14 +17,7 @@ def update_button() -> dbc.ButtonGroup:
             dbc.Button(
                 id="update-button",
                 outline=True,
-                style={
-                    "height": "37px",
-                    "width": "fit-content",
-                    "minWidth": "fit-content",
-                    "display": "flex",
-                    "justifyContent": "center",
-                    "alignItems": "center",
-                },
+                className="btn-sm row-option flex-center",
             ),
             dcc.Dropdown(
                 options=[
@@ -35,17 +28,15 @@ def update_button() -> dbc.ButtonGroup:
                 value="Ticker",
                 id="update-dropdown",
                 style={
-                    "width": "auto",
-                    "minWidth": "8em",
-                    "height": "37px",
                     "borderTopLeftRadius": 0,  # squarify :]
                     "borderBottomLeftRadius": 0,
                 },
+                searchable=False,
                 clearable=False,
+                className="row-option",
             ),
         ],
-        # style={"padding-left": "4em", "margin-left": "auto", "margin-right": 0},
-        style={"width": "100%"},
+        className="w-100",
     )
 
 

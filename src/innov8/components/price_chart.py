@@ -8,7 +8,7 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from dash_bootstrap_templates import ThemeChangerAIO, template_from_url
 
-from innov8.components.decorators import callback, data_access
+from innov8.decorators.data_access import callback, data_access
 
 
 def hex_to_rgba(hex_color, alpha=1.0) -> str:
@@ -28,7 +28,7 @@ OPACITY = 0.5
 def price_chart() -> dash_tvlwc.Tvlwc:
     return dash_tvlwc.Tvlwc(
         id="tv-price-chart",
-        height="calc(100vh - 2em - 83px)",
+        height="100%",
         width="100%",
     )
 
@@ -39,16 +39,14 @@ def ema_switch() -> dbc.InputGroup:
         [
             dbc.InputGroupText(
                 dbc.Checklist(
-                    ["EMA"], id="ema", value=["EMA"], switch=True, persistence=True
+                    ["EMA"],
+                    id="ema",
+                    value=["EMA"],
+                    switch=True,
+                    persistence=True,
+                    input_class_name="position-absolute",
                 ),
-                style={
-                    "height": "37px",
-                    "display": "flex",
-                    "justifyContent": "center",
-                    "alignItems": "center",
-                    # "borderRadius": "0",
-                },
-                class_name="btn btn-outline-secondary",
+                class_name="row-option width-reset flex-center btn btn-outline-secondary",
             ),
             dbc.Input(
                 id="ema-period",
@@ -59,12 +57,10 @@ def ema_switch() -> dbc.InputGroup:
                 step=1,
                 value=9,
                 persistence=True,
-                style={
-                    "paddingLeft": 10,
-                    # "borderRadius": "0"
-                },
+                class_name="row-option",
             ),
         ],
+        id="ema-input-group",
     )
 
 
@@ -74,16 +70,14 @@ def sma_switch() -> dbc.InputGroup:
         [
             dbc.InputGroupText(
                 dbc.Checklist(
-                    ["SMA"], id="sma", value=["SMA"], switch=True, persistence=True
+                    ["SMA"],
+                    id="sma",
+                    value=["SMA"],
+                    switch=True,
+                    persistence=True,
+                    input_class_name="position-absolute",
                 ),
-                style={
-                    "height": "37px",
-                    "display": "flex",
-                    "justifyContent": "center",
-                    "alignItems": "center",
-                    # "borderRadius": "0",
-                },
-                class_name="btn btn-outline-secondary",
+                class_name="row-option width-reset flex-center btn btn-outline-secondary",
             ),
             dbc.Input(
                 id="sma-period",
@@ -94,12 +88,10 @@ def sma_switch() -> dbc.InputGroup:
                 step=1,
                 value=50,
                 persistence=True,
-                style={
-                    "paddingLeft": 10,
-                    # "borderRadius": "0"
-                },
+                class_name="row-option",
             ),
         ],
+        id="sma-input-group",
     )
 
 
@@ -109,6 +101,7 @@ def sma_switch() -> dbc.InputGroup:
     Output("tv-price-chart", "seriesData"),
     Output("tv-price-chart", "seriesOptions"),
     Output("tv-price-chart", "chartOptions"),
+    Output("price-chart-container", "className"),
     Input("symbol-dropdown", "value"),
     Input("ema", "value"),
     Input("sma", "value"),
@@ -162,9 +155,9 @@ def update_price_chart(data, symbol, ema, sma, ema_period, sma_period, theme, up
     theme_name = template_from_url(theme)
 
     template = plotly.io.templates[theme_name]
-    text_color = template["layout"]["font"]["color"]
+    text_color = template["layout"]["font"]["color"]  # type: ignore
     # bg_color = template["layout"]["plot_bgcolor"]
-    grid_color = template["layout"]["scene"]["xaxis"]["gridcolor"]
+    grid_color = template["layout"]["scene"]["xaxis"]["gridcolor"]  # type: ignore
 
     def plot_line(indicator) -> None:
         # Plot indicator line
@@ -222,6 +215,7 @@ def update_price_chart(data, symbol, ema, sma, ema_period, sma_period, theme, up
             },
             "timeScale": {"borderColor": grid_color},
         },
+        "visible",
     )
 
 

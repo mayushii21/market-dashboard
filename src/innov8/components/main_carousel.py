@@ -1,8 +1,8 @@
-import dash_trich_components as dtc
-from dash import html
-from dash.dependencies import Input, Output
+from dash import html, no_update
+from dash._callback import NoUpdate
+from dash.dependencies import Input, Output, State
 
-from innov8.components.decorators import callback, data_access
+from innov8.decorators.data_access import callback, clientside_callback, data_access
 
 change_query = """
 WITH growth AS (
@@ -35,39 +35,14 @@ LIMIT 10
 """
 
 
-# Accepts a list of elements (list comp of html divs in this case) to "carouse" through
-@data_access
-def carousel(data):
-    return dtc.Carousel(
-        [
-            html.Div(
-                [
-                    # Ticker symbol
-                    html.Span(
-                        symbol,
-                        style={
-                            "marginRight": "1em",
-                            "fontSize": "1.1em",
-                        },
-                    ),
-                    # Change (colored)
-                    html.Span(
-                        f"{'+' if change > 0 else ''}{change:.2f}%",
-                        style={
-                            "color": "green" if change > 0 else "red",
-                            "fontSize": "1.1em",
-                        },
-                    ),
-                ],
-                style={"height": "2em", "display": "flex", "alignItems": "center"},
-            )
-            for symbol, change in data.cur.execute(change_query)
-        ],
-        id="main-carousel",
-        autoplay=True,
-        speed=500,
-        slides_to_show=5,
-        responsive=[{"breakpoint": 9999, "settings": {"arrows": False}}],
+def carousel() -> html.Div:
+    return html.Div(
+        html.Div(
+            children=[html.Span("Loading...")],
+            className="swiper-wrapper",
+            id="main-carousel",
+        ),
+        className="swiper mainSwiper",
     )
 
 
@@ -77,28 +52,65 @@ def carousel(data):
     Input("update-state", "data"),
 )
 @data_access
-def update_main_carousel(data, update):
+def update_main_carousel(data, _) -> list[html.Div]:
     return [
         html.Div(
             [
                 # Ticker symbol
-                html.Span(
-                    symbol,
-                    style={
-                        "marginRight": "1em",
-                        "fontSize": "1.1em",
-                    },
-                ),
+                html.Span(symbol),
                 # Change (colored)
                 html.Span(
                     f"{'+' if change > 0 else ''}{change:.2f}%",
                     style={
+                        "marginLeft": "10px",
                         "color": "green" if change > 0 else "red",
-                        "fontSize": "1.1em",
                     },
                 ),
             ],
-            style={"height": "2em", "display": "flex", "alignItems": "center"},
+            className="swiper-slide",
         )
         for symbol, change in data.cur.execute(change_query)
     ]
+
+
+clientside_callback(
+    """
+    function initializeMainSwiper(id) {
+        function initSwiper() {
+            var swiper = new Swiper(".mainSwiper", {
+                slidesPerView: 2,
+                breakpoints: {
+                    // when window width is >= 768px
+                    768: {
+                    slidesPerView: 5,
+                    spaceBetween: 40
+                    }
+                },
+                loop: true,
+                autoplay: {
+                    delay: 2000,
+                    disableOnInteraction: false,
+                },
+                observer: true,
+                cssMode: true,
+            });
+        }
+
+        // Polling mechanism to check if #main-carousel has children
+        const checkChildren = setInterval(() => {
+            const carouselElement = document.getElementById("main-carousel");
+
+            // Check if the carousel element exists and has children
+            if (carouselElement && carouselElement.children.length >= 5) {
+                clearInterval(checkChildren); // Stop polling once children are found
+                initSwiper(); // Initialize Swiper
+            }
+        }, 100); // Check every 100 milliseconds
+
+        return window.dash_clientside.no_update;
+    }
+    """,
+    Output("main-carousel", "id"),
+    Input("initial-load", "className"),
+    State("main-carousel", "children"),
+)

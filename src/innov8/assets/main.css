@@ -1,0 +1,387 @@
+/* Loading indicator */
+._dash-loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+    z-index: 1000;
+    visibility: hidden;
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+._dash-loading::after {
+    content: "";
+    width: 40px;
+    height: 40px;
+    border: 4px solid #ccc;
+    border-top-color: #3498db;
+    border-radius: 50%;
+    -webkit-animation: spin 1s linear infinite;
+    animation: spin 1s linear infinite;
+    position: absolute;
+    visibility: visible;
+}
+
+/* Spinner animation */
+@-webkit-keyframes spin {
+    to {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes spin {
+    to {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
+    }
+}
+
+:root {
+    --row-height: 37px;
+    --gap: 10px;
+}
+
+.container-fluid {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    /* overflow: hidden; */
+    /* enabling this disables sticky */
+}
+
+.flex-center {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
+
+.row-option {
+    height: var(--row-height) !important;
+    width: 100%;
+    min-width: auto;
+}
+
+@supports (min-width: fit-content) {
+    .row-option {
+        min-width: fit-content;
+    }
+}
+
+.width-reset {
+    width: initial !important;
+    min-width: initial !important;
+}
+
+#ticker-symbol {
+    text-align: left;
+    margin-top: 0;
+    margin-bottom: 0px;
+    font-size: 2em;
+    line-height: 1em;
+}
+
+#ticker-name {
+    font-size: 0.8em;
+    text-align: left;
+    margin-bottom: -7px;
+}
+
+#ticker-price {
+    font-size: 1.7em;
+    text-align: right;
+    margin-bottom: -7px;
+}
+
+#ticker-change {
+    font-size: 1em;
+    text-align: right;
+    margin-bottom: -3px;
+}
+
+#exchange-name {
+    text-align: left;
+    font-size: 0.8em;
+    margin-bottom: -3px;
+}
+
+#economic-sector {
+    text-align: left;
+    font-size: 0.8em;
+    margin-bottom: 0px;
+}
+
+.invisible {
+    visibility: hidden;
+}
+
+.visible {
+    visibility: visible;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-rows: calc(var(--row-height) - var(--gap)) var(--row-height) auto 1fr 1fr var(--row-height);
+    gap: var(--gap);
+    height: 100vh;
+    padding-bottom: calc(var(--gap) / 2);
+
+    /* Define named grid areas */
+    grid-template-areas:
+        "swiper swiper swiper swiper swiper swiper swiper swiper swiper swiper swiper swiper"
+        "sector sector sector ticker ticker update update forecast forecast info info info"
+        "chart chart chart chart chart chart chart chart chart info info info"
+        "chart chart chart chart chart chart chart chart chart table table table"
+        "chart chart chart chart chart chart chart chart chart weekly weekly weekly"
+        "theme theme . . . ema ema sma sma weekly weekly weekly";
+}
+
+@supports (height: 100dvh) {
+    .grid-container {
+        height: 100dvh;
+    }
+}
+
+.mainSwiper {
+    grid-area: swiper;
+    position: sticky;
+    top: 0;
+    z-index: 999;
+
+    width: 100%;
+    overflow: hidden;
+    margin-bottom: calc(var(--gap) * -1);
+}
+
+#sector-dropdown {
+    grid-area: sector;
+}
+
+#symbol-dropdown {
+    grid-area: ticker;
+}
+
+#update-button-container {
+    grid-area: update;
+}
+
+#update-button {
+    width: auto;
+}
+
+#update-dropdown {
+    min-width: 13ch;
+}
+
+#forecast-button {
+    grid-area: forecast;
+}
+
+#price-chart-container {
+    grid-area: chart;
+}
+
+#theme-container {
+    grid-area: theme;
+}
+
+#ema-input-group {
+    grid-area: ema;
+}
+
+#sma-input-group {
+    grid-area: sma;
+}
+
+#ticker-data {
+    grid-area: info;
+}
+
+#intra-sector-container {
+    grid-area: table;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+#intra-sector-title {
+    text-align: center;
+    display: block;
+    margin-bottom: 0.5em;
+    font-size: 1em;
+}
+
+#correlation-table {
+    flex: 1;
+    overflow-y: auto;
+}
+
+#weekly-charts-container {
+    grid-area: weekly;
+}
+
+#weekly-charts-carousel {
+    height: 100%;
+    width: 100%;
+}
+
+#weekly-charts-carousel>.swiper-wrapper {
+    height: 100%;
+    width: 200%;
+}
+
+.blur {
+    display: none;
+}
+
+.Select-value {
+    display: flex;
+    align-items: center;
+}
+
+.Select-input {
+    background: transparent !important;
+}
+
+@media (max-width: 1024px) {
+    html {
+        font-size: 90%;
+    }
+
+    body {
+        /* keeps the background from scrolling */
+        background-attachment: fixed;
+    }
+
+    .grid-container {
+        padding-left: var(--gap) !important;
+        padding-right: var(--gap) !important;
+        padding-bottom: 0;
+        height: calc(200vh - (var(--row-height) * 2));
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+        grid-template-rows: var(--row-height) var(--row-height) auto minmax(0, 1fr) var(--row-height) repeat(2, calc((100vh - (var(--row-height) * 2) - (var(--gap) * 3)) / 2)) var(--row-height);
+        gap: 10px;
+        grid-template-areas:
+            "swiper swiper swiper swiper"
+            "sector sector ticker forecast"
+            "info info info info"
+            "chart chart chart chart"
+            "ema ema sma sma"
+            "table table table table"
+            "weekly weekly weekly weekly"
+            "theme update update update";
+    }
+
+    @supports (height: 100dvh) {
+        .grid-container {
+            height: calc(200dvh - (var(--row-height) * 2));
+            grid-template-rows: var(--row-height) var(--row-height) auto minmax(0, 1fr) var(--row-height) repeat(2, calc((100dvh - (var(--row-height) * 2) - (var(--gap) * 3)) / 2)) var(--row-height);
+        }
+    }
+
+    #forecast-button {
+        font-size: 0.875rem;
+    }
+
+    .form-check-label,
+    .form-control {
+        font-size: 0.85rem;
+    }
+
+    #price-chart-container {
+        display: flex;
+        height: 100%;
+        max-height: 100%;
+        overflow: hidden;
+    }
+
+    #tv-price-chart {
+        width: 100%;
+        height: 100%;
+        max-height: 100%;
+        max-width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .tv-lightweight-charts {
+        height: 100%;
+        width: 100%;
+        max-height: 100%;
+        max-width: 100%;
+        position: relative;
+    }
+
+    canvas {
+        width: 100% !important;
+        /* Force the canvas to respect parent size */
+        height: 100% !important;
+        /* Force the canvas to respect parent size */
+        max-height: 100%;
+        /* Constrain max height to 100% of the parent */
+        max-width: 100%;
+        /* Constrain max width to 100% of the parent */
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+
+    .mainSwiper {
+        font-size: 112%;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        margin-bottom: 0;
+    }
+
+
+    #theme-container,
+    #update-button-container {
+        position: sticky;
+        bottom: 0;
+        z-index: 10;
+    }
+
+    /* dropup */
+    #update-dropdown .Select-menu-outer {
+        border-top-right-radius: 4px;
+        border-top-left-radius: 4px;
+        border-bottom-right-radius: 0px;
+        border-bottom-left-radius: 0px;
+        border-bottom: none;
+        -webkit-transform: translateY(calc((var(--row-height) * -1) - 100%));
+        transform: translateY(calc((var(--row-height) * -1) - 100%));
+    }
+
+    .blur {
+        -webkit-backdrop-filter: blur(21px);
+        backdrop-filter: blur(21px);
+        left: 0;
+        right: 0;
+        position: fixed;
+        z-index: 7;
+        display: block !important;
+    }
+
+    .top {
+        top: 0;
+    }
+
+    .bottom {
+        bottom: 0;
+    }
+
+    .Select-control,
+    .Select-menu-outer {
+        font-size: 0.7rem;
+    }
+}

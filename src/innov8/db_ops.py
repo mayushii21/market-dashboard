@@ -1,12 +1,13 @@
 import numpy as np
 
-np.float_ = np.float64
+np.float_ = np.float64  # type: ignore
 
 import logging
 import os
 import sqlite3
+import threading
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import cast
 
@@ -52,21 +53,26 @@ class DataStore:
         self.script_directory = script_directory
         # Construct the absolute path to the database file
         self.db_path = script_directory / "stonks.db"
+        self.lock = threading.Lock()
         # Connect to the database using the absolute path
-        self.con = sqlite3.connect(self.db_path, check_same_thread=False)
-        self.cur = self.con.cursor()
+        with self.lock:
+            self.con = sqlite3.connect(self.db_path, check_same_thread=False)
+            self.cur = self.con.cursor()
+
         self.ticker_symbols = None
-        self.main_table: pd.DataFrame = None
+        self.main_table: pd.DataFrame | None = None
 
         # Check if the database is populated by checking if the price table is present
-        if not self.cur.execute(
-            """
-            SELECT name
-            FROM sqlite_master
-            WHERE TYPE = 'table'
-                AND name = 'price'
-            """
-        ).fetchone():
+        with self.lock:
+            tables_exist = self.cur.execute(
+                """
+                SELECT name
+                FROM sqlite_master
+                WHERE TYPE = 'table'
+                    AND name = 'price'
+                """
+            ).fetchone()
+        if not tables_exist:
             # Create necessary tables
             self.create_tables()
             self.initiate_tickers_obj(scrape=True)
@@ -74,6 +80,10 @@ class DataStore:
             self.insert_ticker_info()
             # Download data and fill date and price tables
             self.fill_ohlc()
+            self.load_main_table()
+            assert self.main_table is not None
+            for symbol in tqdm(self.main_table.symbol.unique()):
+                self.generate_forecast(symbol)
         # If the database is already populated
         else:
             self.initiate_tickers_obj(scrape=False)
@@ -179,162 +189,172 @@ class DataStore:
         DROP TABLE IF EXISTS currency;
         DROP TABLE IF EXISTS forecast;
         """
-        self.cur.executescript(drop_tables)
-        self.cur.executescript(create_tables_query)
-        self.con.commit()
+        with self.lock:
+            self.cur.executescript(drop_tables)
+            self.cur.executescript(create_tables_query)
+            self.con.commit()
 
     def insert_ticker_info(self):
         logger.info("Populating database with main ticker information...")
         for symbol in tqdm(self.ticker_symbols):
             try:
-                with self.con:
-                    info = self.tickers.tickers[symbol].info
-                    self.con.execute(
-                        """
-                        INSERT
-                            OR IGNORE INTO currency (iso_code)
-                        VALUES (:currency)
-                        """,
-                        info,
-                    )
-                    self.con.execute(
-                        """
-                        INSERT
-                            OR IGNORE INTO exchange (name)
-                        VALUES (:exchange)
-                        """,
-                        info,
-                    )
-                    self.con.execute(
-                        """
-                        INSERT
-                            OR IGNORE INTO ticker_type (name)
-                        VALUES (:quoteType)
-                        """,
-                        info,
-                    )
-                    self.con.execute(
-                        """
-                        INSERT
-                            OR IGNORE INTO sector (name)
-                        VALUES (:sector)
-                        """,
-                        info,
-                    )
-                    self.con.execute(
-                        """
-                        INSERT INTO ticker (
-                                name,
-                                symbol,
-                                currency_id,
-                                exchange_id,
-                                ticker_type_id,
-                                sector_id
-                            )
-                        VALUES (
-                                :shortName,
-                                :symbol,
-                                (
-                                    SELECT id
-                                    FROM currency
-                                    WHERE iso_code = :currency
-                                ),
-                                (
-                                    SELECT id
-                                    FROM exchange
-                                    WHERE name = :exchange
-                                ),
-                                (
-                                    SELECT id
-                                    FROM ticker_type
-                                    WHERE name = :quoteType
-                                ),
-                                (
-                                    SELECT id
-                                    FROM sector
-                                    WHERE name = :sector
+                info = self.tickers.tickers[symbol].info
+                with self.lock:
+                    with self.con:
+                        self.con.execute(
+                            """
+                            INSERT
+                                OR IGNORE INTO currency (iso_code)
+                            VALUES (:currency)
+                            """,
+                            info,
+                        )
+                        self.con.execute(
+                            """
+                            INSERT
+                                OR IGNORE INTO exchange (name)
+                            VALUES (:exchange)
+                            """,
+                            info,
+                        )
+                        self.con.execute(
+                            """
+                            INSERT
+                                OR IGNORE INTO ticker_type (name)
+                            VALUES (:quoteType)
+                            """,
+                            info,
+                        )
+                        self.con.execute(
+                            """
+                            INSERT
+                                OR IGNORE INTO sector (name)
+                            VALUES (:sector)
+                            """,
+                            info,
+                        )
+                        self.con.execute(
+                            """
+                            INSERT INTO ticker (
+                                    name,
+                                    symbol,
+                                    currency_id,
+                                    exchange_id,
+                                    ticker_type_id,
+                                    sector_id
                                 )
-                            )
-                        """,
-                        info,
-                    )
-                    logger.debug("Successfully inserted info for {}", symbol)
+                            VALUES (
+                                    :shortName,
+                                    :symbol,
+                                    (
+                                        SELECT id
+                                        FROM currency
+                                        WHERE iso_code = :currency
+                                    ),
+                                    (
+                                        SELECT id
+                                        FROM exchange
+                                        WHERE name = :exchange
+                                    ),
+                                    (
+                                        SELECT id
+                                        FROM ticker_type
+                                        WHERE name = :quoteType
+                                    ),
+                                    (
+                                        SELECT id
+                                        FROM sector
+                                        WHERE name = :sector
+                                    )
+                                )
+                            """,
+                            info,
+                        )
+                logger.debug("Successfully inserted info for {}", symbol)
             except Exception:
                 logger.error("Failed to insert {}", symbol)
 
     def fill_ohlc(self):
         logger.info("Populating database with OHLC data...")
         # Per ticker OHLC data retrieval - helps avoid rate limiting
-        for symbol in tqdm(
-            self.cur.execute(
+        with self.lock:
+            symbols = self.cur.execute(
                 """
                 SELECT symbol
                 FROM ticker
                 """
             ).fetchall()
-        ):
+        for symbol in tqdm(symbols):
             try:
                 # Retrieve OHLC data for symbol
+                start_date = (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")
+                end_date = datetime.now().strftime("%Y-%m-%d")
                 ohlc_data = self.tickers.tickers[symbol[0]].history(
-                    start="2022-07-01", end="2023-07-01"
+                    start=start_date, end=end_date
                 )[["Open", "High", "Low", "Close", "Volume"]]
                 # Convert the date to a unix timestamp (remove timezone holding local time representations)
                 ohlc_data.index = (
-                    ohlc_data.index.tz_localize(None).astype("int64") / 10**9
+                    cast(pd.DatetimeIndex, ohlc_data.index)
+                    .tz_localize(None)
+                    .astype("int64")
+                    / 10**9
                 )
                 ohlc_data.reset_index(inplace=True)
                 # Convert to a list of dictionaries (records)
                 ohlc_data = ohlc_data.to_dict(orient="records")
-                with self.con:
-                    # Inserting date could be optimized
-                    self.con.executemany(
-                        """
-                        INSERT
-                            OR IGNORE INTO date (date)
-                        VALUES (:Date)
-                        """,
-                        ohlc_data,
-                    )
+                with self.lock:
+                    with self.con:
+                        # Inserting date could be optimized
+                        self.con.executemany(
+                            """
+                            INSERT
+                                OR IGNORE INTO date (date)
+                            VALUES (:Date)
+                            """,
+                            ohlc_data,
+                        )
 
-                    # Using an f-string is an SQL injection vulnerability,
-                    # but given the context it doesn't matter, can be easily fixed if needed
-                    self.con.executemany(
-                        f"""
-                        INSERT INTO price (
-                                ticker_id,
-                                date_id,
-                                OPEN,
-                                high,
-                                low,
-                                close,
-                                volume
-                            )
-                        VALUES (
-                                (
-                                    SELECT id
-                                    FROM ticker
-                                    WHERE symbol = '{symbol[0]}'
-                                ),
-                                (
-                                    SELECT id
-                                    FROM date
-                                    WHERE date = :Date
-                                ),
-                                :Open,
-                                :High,
-                                :Low,
-                                :Close,
-                                :Volume
-                            )
-                    """,
-                        ohlc_data,
-                    )
-                    logger.debug("Successfully inserted OHLC data for {}", symbol[0])
+                        # Using an f-string is an SQL injection vulnerability,
+                        # but given the context it doesn't matter, can be easily fixed if needed
+                        self.con.executemany(
+                            f"""
+                            INSERT INTO price (
+                                    ticker_id,
+                                    date_id,
+                                    OPEN,
+                                    high,
+                                    low,
+                                    close,
+                                    volume
+                                )
+                            VALUES (
+                                    (
+                                        SELECT id
+                                        FROM ticker
+                                        WHERE symbol = '{symbol[0]}'
+                                    ),
+                                    (
+                                        SELECT id
+                                        FROM date
+                                        WHERE date = :Date
+                                    ),
+                                    :Open,
+                                    :High,
+                                    :Low,
+                                    :Close,
+                                    :Volume
+                                )
+                        """,
+                            ohlc_data,
+                        )
+                logger.debug("Successfully inserted OHLC data for {}", symbol[0])
             except Exception as e:
                 logger.error("[{}] Exception: {}", symbol[0], e)
 
     def generate_forecast(self, symbol: str) -> None:
-        df = self.main_table
+        with self.lock:
+            df = self.main_table
+        assert df is not None
 
         predictions = {}
         periods = 5
@@ -398,57 +418,60 @@ class DataStore:
 
             # Insert data into the database
             try:
-                with self.con:
-                    self.con.execute(
-                        """
-                        INSERT INTO forecast (ticker_id, date, open, high, low, close)
-                        VALUES (
+                with self.lock:
+                    with self.con:
+                        self.con.execute(
+                            """
+                            INSERT INTO forecast (ticker_id, date, open, high, low, close)
+                            VALUES (
+                                (
+                                    SELECT id
+                                    FROM ticker
+                                    WHERE symbol = ?
+                                ),
+                                ?, ?, ?, ?, ?
+                            )
+                            """,
                             (
-                                SELECT id
-                                FROM ticker
-                                WHERE symbol = ?
+                                symbol,
+                                pred_date,
+                                o_price,
+                                h_price,
+                                l_price,
+                                c_price,
                             ),
-                            ?, ?, ?, ?, ?
                         )
-                        """,
-                        (
-                            symbol,
-                            pred_date,
-                            o_price,
-                            h_price,
-                            l_price,
-                            c_price,
-                        ),
-                    )
             except Exception as e:
                 logger.error("[{}] Exception: {}", symbol, e)
 
     def clear_forecasts(self):
-        with self.con:
-            self.con.execute(
-                """
-                DELETE
-                FROM forecast;
-                """
-            )
+        with self.lock:
+            with self.con:
+                self.con.execute(
+                    """
+                    DELETE
+                    FROM forecast;
+                    """
+                )
 
     def get_forecasts(self, symbol: str, date: datetime):
-        with self.con:
-            return self.con.execute(
-                """
-                SELECT open, high, low, close, date
-                FROM forecast
-                WHERE ticker_id = (
-                    SELECT id
-                    FROM ticker
-                    WHERE symbol = ?
-                )
-                AND date > ?
-                ORDER BY date ASC
-                LIMIT 1
-                """,
-                (symbol, date),
-            ).fetchone()
+        with self.lock:
+            with self.con:
+                return self.con.execute(
+                    """
+                    SELECT open, high, low, close, date
+                    FROM forecast
+                    WHERE ticker_id = (
+                        SELECT id
+                        FROM ticker
+                        WHERE symbol = ?
+                    )
+                    AND date > ?
+                    ORDER BY date ASC
+                    LIMIT 1
+                    """,
+                    (symbol, date),
+                ).fetchone()
 
     # Create DataFrame from SQL query
     def load_main_table(self, force_update=True):
@@ -459,39 +482,42 @@ class DataStore:
         ):
             logger.info("Loading main table...")
             if update_signal:
-                if self.con:
-                    self.con.close()  # Close the existing connection if it exists
+                with self.lock:
+                    if self.con:
+                        self.con.close()  # Close the existing connection if it exists
 
-                self.con = sqlite3.connect(self.db_path, check_same_thread=False)
-                self.cur = self.con.cursor()
-                os.remove(self.script_directory / "update_signal")
-            self.main_table = pd.read_sql_query(
-                self.main_query,
-                self.con,
-                parse_dates=["date"],
-                dtype={
-                    "symbol": "category",
-                    "name": "category",
-                    "sector": "category",
-                    "exchange": "category",
-                    "type": "category",
-                    "currency": "category",
-                },
-            )
+                    self.con = sqlite3.connect(self.db_path, check_same_thread=False)
+                    self.cur = self.con.cursor()
+                    os.remove(self.script_directory / "update_signal")
+            with self.lock:
+                self.main_table = pd.read_sql_query(
+                    self.main_query,
+                    self.con,
+                    parse_dates=["date"],
+                    dtype={
+                        "symbol": "category",
+                        "name": "category",
+                        "sector": "category",
+                        "exchange": "category",
+                        "type": "category",
+                        "currency": "category",
+                    },
+                )
 
     def initiate_tickers_obj(self, scrape):
         if scrape:
             self.ticker_symbols = self.scrape_symbols()
         else:
-            self.ticker_symbols = [
-                symbol[0]
-                for symbol in self.con.execute(
-                    """
-                    SELECT symbol
-                    FROM ticker
-                    """
-                ).fetchall()
-            ]
+            with self.lock:
+                self.ticker_symbols = [
+                    symbol[0]
+                    for symbol in self.con.execute(
+                        """
+                        SELECT symbol
+                        FROM ticker
+                        """
+                    ).fetchall()
+                ]
         # Initiate tickers instance
         self.tickers = yf.Tickers(" ".join(self.ticker_symbols))
 
@@ -499,17 +525,18 @@ class DataStore:
     def add_new_ohlc(self, symbol):
         logger.debug("Updating {}...", symbol)
         try:
-            # Get the date for the next entry
-            next_entry = self.cur.execute(
-                """
-                SELECT DATE(max(date) + 86400, 'unixepoch')
-                FROM price p
-                    JOIN ticker t ON t.id = p.ticker_id
-                    JOIN date d ON p.date_id = d.id
-                WHERE t.symbol = ?
-                """,
-                (symbol,),
-            ).fetchone()[0]
+            with self.lock:
+                # Get the date for the next entry
+                next_entry = self.cur.execute(
+                    """
+                    SELECT DATE(max(date) + 86400, 'unixepoch')
+                    FROM price p
+                        JOIN ticker t ON t.id = p.ticker_id
+                        JOIN date d ON p.date_id = d.id
+                    WHERE t.symbol = ?
+                    """,
+                    (symbol,),
+                ).fetchone()[0]
 
             # Skip when start date is after end date
             timezone = self.tickers.tickers[symbol]._get_ticker_tz(
@@ -531,55 +558,61 @@ class DataStore:
                 start=next_entry, raise_errors=True
             )[["Open", "High", "Low", "Close", "Volume"]]
             # Convert the date to a unix timestamp (remove timezone holding local time representations)
-            ohlc_data.index = ohlc_data.index.tz_localize(None).astype("int64") / 10**9
+            ohlc_data.index = (
+                cast(pd.DatetimeIndex, ohlc_data.index)
+                .tz_localize(None)
+                .astype("int64")
+                / 10**9
+            )
             ohlc_data.reset_index(inplace=True)
             # Convert to a list of dictionaries (records)
             ohlc_data = ohlc_data.to_dict(orient="records")
-            with self.con:
-                # Inserting date could be optimized
-                self.con.executemany(
-                    """
-                    INSERT
-                        OR IGNORE INTO date (date)
-                    VALUES (:Date)
-                    """,
-                    ohlc_data,
-                )
+            with self.lock:
+                with self.con:
+                    # Inserting date could be optimized
+                    self.con.executemany(
+                        """
+                        INSERT
+                            OR IGNORE INTO date (date)
+                        VALUES (:Date)
+                        """,
+                        ohlc_data,
+                    )
 
-                # Using an f-string is an SQL injection vulnerability,
-                # but given the context it doesn't matter
-                self.con.executemany(
-                    f"""
-                    INSERT INTO price (
-                            ticker_id,
-                            date_id,
-                            OPEN,
-                            high,
-                            low,
-                            close,
-                            volume
-                        )
-                    VALUES (
-                            (
-                                SELECT id
-                                FROM ticker
-                                WHERE symbol = '{symbol}'
-                            ),
-                            (
-                                SELECT id
-                                FROM date
-                                WHERE date = :Date
-                            ),
-                            :Open,
-                            :High,
-                            :Low,
-                            :Close,
-                            :Volume
-                        )
-                    """,
-                    ohlc_data,
-                )
-                logger.debug("{} updated \u2713", symbol)
+                    # Using an f-string is an SQL injection vulnerability,
+                    # but given the context it doesn't matter
+                    self.con.executemany(
+                        f"""
+                        INSERT INTO price (
+                                ticker_id,
+                                date_id,
+                                OPEN,
+                                high,
+                                low,
+                                close,
+                                volume
+                            )
+                        VALUES (
+                                (
+                                    SELECT id
+                                    FROM ticker
+                                    WHERE symbol = '{symbol}'
+                                ),
+                                (
+                                    SELECT id
+                                    FROM date
+                                    WHERE date = :Date
+                                ),
+                                :Open,
+                                :High,
+                                :Low,
+                                :Close,
+                                :Volume
+                            )
+                        """,
+                        ohlc_data,
+                    )
+            logger.debug("{} updated \u2713", symbol)
         except Exception as e:
             logger.error("[{}] Exception: {}", symbol, e)
 

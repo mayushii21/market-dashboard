@@ -4,7 +4,7 @@ from typing import Any
 import dash_bootstrap_components as dbc
 from dash import Input, Output, State, ctx, no_update
 
-from innov8.components.decorators import callback, data_access
+from innov8.decorators.data_access import callback, data_access
 
 
 def forecast_button() -> dbc.Button:
@@ -13,30 +13,37 @@ def forecast_button() -> dbc.Button:
         children="Forecast",
         outline=True,
         color="success",
-        style={"height": "37px", "width": "100%"},
+        className="row-option flex-center",
     )
 
 
 # Add forecast ohlc to main chart on button press
 @callback(
-    Output("tv-price-chart", "seriesData", allow_duplicate=True),
-    Output("forecast-button", "disabled"),
-    Output("forecast-button", "n_clicks"),
-    Output("forecast-button", "color"),
-    Output("forecast-button", "style"),
     Input("forecast-button", "n_clicks"),
-    State("tv-price-chart", "seriesData"),
-    Input("symbol-dropdown", "value"),
-    Input("update-state", "data"),
+    Input("tv-price-chart", "seriesData"),
+    State("symbol-dropdown", "value"),
+    output={
+        "series_data": Output("tv-price-chart", "seriesData", allow_duplicate=True),
+        "forecast_button_disabled": Output("forecast-button", "disabled"),
+        "forecast_button_clicks": Output("forecast-button", "n_clicks"),
+        "forecast_button_color": Output("forecast-button", "color"),
+        "forecast_button_style": Output("forecast-button", "style"),
+    },
     prevent_initial_call=True,
 )
 @data_access
-def update_price_chart_w_forecast(data, button, series_data, symbol, _) -> Any:
-    style = {"height": "37px", "width": "100%"}
+def update_price_chart_w_forecast(data, button, series_data, symbol) -> Any:
+    output = {
+        "series_data": no_update,
+        "forecast_button_disabled": False,
+        "forecast_button_clicks": no_update,
+        "forecast_button_color": "success",
+        "forecast_button_style": {},
+    }
 
-    # On initial render or ticker switch
-    if ctx.triggered_id != "forecast-button" or ctx.triggered_id == "update-state":
-        return (no_update, False, None, "success", style)
+    # Reset the button
+    if ctx.triggered_id != "forecast-button":
+        return output | {"forecast_button_clicks": None}
 
     # Change the button color and style depending on how many times the forecast button has been pressed
     match button:
@@ -46,9 +53,12 @@ def update_price_chart_w_forecast(data, button, series_data, symbol, _) -> Any:
             color = "danger"
         case _:
             color = no_update
+    output |= {"forecast_button_color": color}
     match button:
         case 2 | 4:
-            style |= {"filter": "hue-rotate(-7deg) contrast(1.05) brightness(0.75)"}
+            output["forecast_button_style"] |= {
+                "filter": "hue-rotate(-7deg) contrast(1.05) brightness(0.75)"
+            }
 
     date = series_data[0][-1]["time"]
 
@@ -71,6 +81,11 @@ def update_price_chart_w_forecast(data, button, series_data, symbol, _) -> Any:
 
         nxt = data.get_forecasts(symbol, forecast[4])
 
-        return series_data, nxt is None, no_update, color, style
+        return output | {
+            "series_data": series_data,
+            "forecast_button_disabled": nxt is None,
+        }
 
-    return (no_update, True, no_update, color, style)
+    return output | {
+        "forecast_button_disabled": True,
+    }
