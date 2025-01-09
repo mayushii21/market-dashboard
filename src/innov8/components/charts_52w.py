@@ -1,26 +1,31 @@
-import dash_trich_components as dtc
 import plotly.graph_objects as go
-from dash import dcc
-from dash.dependencies import Input, Output
+from dash import dcc, html
+from dash.dependencies import Input, Output, State
 from dash_bootstrap_templates import ThemeChangerAIO, template_from_url
 
-from innov8.components.decorators import callback, data_access
+from innov8.decorators.data_access import callback, clientside_callback, data_access
 
 
 # Carousel showing 52-week data
-def carousel_52_week():
-    return dtc.Carousel(
-        [
-            dcc.Graph(id="52-week-price-chart"),
-            dcc.Graph(id="52-week-high-low-indicator"),
-        ],
-        slides_to_show=1,
-        autoplay=True,
-        speed=4000,
-        style={"height": 300, "width": 370, "paddingBottom": "6px"},
-        responsive=[
-            {"breakpoint": 9999, "settings": {"arrows": False}},
-        ],
+def carousel_52_week() -> html.Div:
+    return html.Div(
+        html.Div(
+            className="swiper-wrapper",
+            children=[
+                dcc.Graph(
+                    id="52-week-price-chart",
+                    responsive=True,
+                    className="swiper-slide",
+                ),
+                dcc.Graph(
+                    id="52-week-high-low-indicator",
+                    responsive=True,
+                    className="swiper-slide",
+                ),
+            ],
+        ),
+        id="weekly-charts-carousel",
+        className="swiper weeklySwiper",
     )
 
 
@@ -28,12 +33,13 @@ def carousel_52_week():
 @callback(
     Output("52-week-price-chart", "figure"),
     Output("52-week-high-low-indicator", "figure"),
+    Output("weekly-charts-container", "hidden"),
     Input("symbol-dropdown", "value"),
     Input(ThemeChangerAIO.ids.radio("theme"), "value"),
     Input("update-state", "data"),
 )
 @data_access
-def update_52_week_charts(data, symbol, theme, update):
+def update_52_week_charts(data, symbol, theme, _):
     # Filter data by ticker symbol
     ticker = data.main_table[data.main_table.symbol == symbol].set_index("date")
 
@@ -85,7 +91,7 @@ def update_52_week_charts(data, symbol, theme, update):
             gauge={
                 "axis": {"range": [df_52_week_low, df_52_week_high]},
                 # Set bar color to theme's primary color (extracted from previous chart)
-                "bar": {"color": fig.layout.template.layout.colorway[0]},
+                "bar": {"color": fig.layout.template.layout.colorway[0]},  # type: ignore
             },
             domain={"x": [0, 1], "y": [0, 0.9]},
         )
@@ -145,4 +151,27 @@ def update_52_week_charts(data, symbol, theme, update):
         showlegend=False,
     )
 
-    return fig, fig2
+    return (fig, fig2, False)
+
+
+clientside_callback(
+    """
+    function initializeWeeklySwiper(id) {
+        var swiper = new Swiper(".weeklySwiper", {
+            slidesPerView: 1,
+            autoplay: {
+                delay: 3000,
+                disableOnInteraction: false,
+                pauseOnMouseEnter: true,
+            },
+            observer: true,
+            cssMode: false,
+        });
+
+        return window.dash_clientside.no_update;
+    }
+    """,
+    Output("weekly-charts-carousel", "id"),
+    Input("initial-load", "className"),
+    State("weekly-charts-container", "hidden"),
+)

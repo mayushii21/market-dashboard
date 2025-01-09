@@ -1,16 +1,15 @@
 [project]
 name = "innov8"
-version = "0.1.0-beta"
+version = "0.3.0-beta"
 description = "an interactive market dashboard"
 authors = [
-    {name = "mayushii21", email = "122178787+mayushii21@users.noreply.github.com"},
+    { name = "mayushii21", email = "122178787+mayushii21@users.noreply.github.com" },
 ]
 dependencies = [
     "dash[diskcache]==2.16.1",
     "dash-bootstrap-components",
-    "dash-bootstrap-templates",
+    "dash-bootstrap-templates>=1.3.0",
     "dash-tvlwc>=0.1.1",
-    "dash-trich-components",
     "requests",
     "beautifulsoup4",
     "lxml",
@@ -19,10 +18,11 @@ dependencies = [
     "tqdm",
     "python-dotenv>=1.0.1",
     "loguru>=0.7.2",
+    "prophet>=1.1.5",
 ]
 requires-python = ">=3.10"
 readme = "README.md"
-license = {text = "BSD-3-Clause"}
+license = { text = "BSD-3-Clause" }
 
 [build-system]
 requires = ["pdm-backend"]
@@ -37,13 +37,9 @@ Repository = "https://github.com/mayushii21/market-dashboard"
 "Bug Tracker" = "https://github.com/mayushii21/market-dashboard/issues"
 
 [tool.pytest.ini_options]
-addopts = [
-    "--import-mode=importlib",
-]
+addopts = ["--import-mode=importlib"]
 
 [tool.pdm]
 
 [tool.pdm.dev-dependencies]
-test = [
-    "pytest>=8.2.2",
-]
+test = ["pytest>=8.2.2", "pytest-cov>=6.0.0"]

@@ -1,7 +1,7 @@
 from dash import html
 from dash.dependencies import Input, Output
 
-from innov8.components.decorators import callback, data_access
+from innov8.decorators.data_access import callback, data_access
 
 
 # div with main ticker information
@@ -10,55 +10,17 @@ def price_card():
     return html.Div(
         [
             # Symbol
-            html.P(
-                id="ticker-symbol",
-                style={
-                    "textAlign": "left",
-                    "marginTop": 0,
-                    "marginBottom": -7,
-                    "fontSize": "3em",
-                },
-            ),
+            html.P(id="ticker-symbol"),
             # Name
-            html.P(
-                id="ticker-name",
-                style={
-                    "fontSize": "1em",
-                    "textAlign": "left",
-                    "marginBottom": -7,
-                },
-            ),
+            html.P(id="ticker-name"),
             # Price and currency
-            html.P(
-                id="ticker-price",
-                style={
-                    "fontSize": "2.3em",
-                    "textAlign": "right",
-                    "marginBottom": -7,
-                },
-            ),
-            # Price change (style is specified in callback)
-            html.P(
-                id="ticker-change",
-            ),
+            html.P(id="ticker-price"),
+            # Price change
+            html.P(id="ticker-change"),
             # Exchange
-            html.P(
-                id="exchange-name",
-                style={
-                    "textAlign": "left",
-                    "fontSize": "1.3em",
-                    "marginBottom": -3,
-                },
-            ),
+            html.P(id="exchange-name"),
             # Economic sector
-            html.P(
-                id="economic-sector",
-                style={
-                    "textAlign": "left",
-                    "fontSize": "1.3em",
-                    "marginBottom": "0.5em",
-                },
-            ),
+            html.P(id="economic-sector"),
         ],
         id="ticker-data",
     )
@@ -77,12 +39,12 @@ def price_card():
     Input("update-state", "data"),
 )
 @data_access
-def update_symbol_data(data, symbol, update):
+def update_symbol_data(data, symbol, _):
     ticker = data.main_table.loc[
         data.main_table.symbol == symbol,
         ["name", "close", "exchange", "sector", "currency"],
     ].tail(2)
-    # Getting the chosen symbol's current price and its change in comparison to its previous value
+    # Getting the chosen symbols current price and its change in comparison to its previous value
     current_price = ticker.iat[-1, 1]
     change = (current_price / ticker.iat[-2, 1]) - 1
     return (
@@ -91,9 +53,6 @@ def update_symbol_data(data, symbol, update):
         f"{current_price:.2f} ({ticker.iat[0, 4]})",  # (currency)
         f"{'+' if change > 0 else ''}{change:.2%}",
         {
-            "fontSize": "1.2em",
-            "textAlign": "right",
-            "marginBottom": -3,
             "color": "green" if change > 0 else "red",
         },  # set style color depending on price change
         f"Exchange: {ticker.iat[0, 2]}",

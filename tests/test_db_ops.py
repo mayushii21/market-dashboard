@@ -8,13 +8,13 @@ from innov8.db_ops import DataStore
 # Get the absolute path of the directory containing the script
 script_directory = Path(__file__).resolve().parent
 # Construct the absolute path to the database file
-database_path = script_directory / "test_stonks.db"
+database_path = script_directory / "stonks.db"
 
 
 @pytest.fixture(scope="module")
-def data_store():
+def data_store() -> DataStore:
     # Create a DataStore instance for testing
-    data = DataStore(database_path)
+    data = DataStore(script_directory)
     data.create_tables()
     return data
 
@@ -37,6 +37,7 @@ def test_create_tables(data_store):
         ("ticker",),
         ("date",),
         ("price",),
+        ("forecast",),
     ]
 
 
@@ -76,9 +77,23 @@ def test_load_main_table(data_store):
 
 
 def test_add_new_ohlc(data_store):
+    # Delete a few records to simulate old data
+    data_store.cur.execute("""
+        DELETE FROM price
+        WHERE (ticker_id, date_id) IN (
+            SELECT p.ticker_id, p.date_id
+            FROM price p
+            JOIN date d 
+                ON p.date_id = d.id
+            JOIN ticker t 
+                ON p.ticker_id = t.id
+            WHERE t.symbol = "AAPL"
+            ORDER BY d.date DESC
+            LIMIT 3
+        );
+    """)
+
     # Store old data count
-    data_store.cur.execute("SELECT COUNT(*) FROM date")
-    date_count_1 = data_store.cur.fetchone()[0]
     data_store.cur.execute("SELECT COUNT(*) FROM price")
     price_count_1 = data_store.cur.fetchone()[0]
 
@@ -86,13 +101,10 @@ def test_add_new_ohlc(data_store):
     data_store.add_new_ohlc("AAPL")
 
     # Check new data count
-    data_store.cur.execute("SELECT COUNT(*) FROM date")
-    date_count_2 = data_store.cur.fetchone()[0]
     data_store.cur.execute("SELECT COUNT(*) FROM price")
     price_count_2 = data_store.cur.fetchone()[0]
 
     # Check if new OHLC data is added to the database
-    assert date_count_2 > date_count_1
     assert price_count_2 > price_count_1
 
 
