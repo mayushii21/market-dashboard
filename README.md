@@ -39,7 +39,7 @@ This project is intended for research and educational purposes only.
 
 ## Usage and Installation
 
-An online demo of the tool can be accessed at <http://innov8finance.pythonanywhere.com>.
+An online demo of the tool can be accessed at <https://innov8finance.pythonanywhere.com>.
 
 It is recommended to install a local version for optimal performance and faster rendering. **innov8finance** requires Python to run. The latest version can be downloaded and installed from [https://www.python.org](https://www.python.org/downloads/). The package is available on [PyPI](https://pypi.org/project/innov8/) and can be easily installed using pip:
 
