@@ -5,7 +5,7 @@
 groups = ["default", "test"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:7d0fb56d3b1ab9890d191400cd0292ca78dbdc71c7a88b86b9534247df9afd03"
+content_hash = "sha256:643fb9bb512b62fe39e244f1b3c8d5537e9df5bcb8dc06ee3b5270d4170f6482"
 
 [[metadata.targets]]
 requires_python = ">=3.10"
@@ -386,7 +386,7 @@ files = [
 
 [[package]]
 name = "dash-bootstrap-templates"
-version = "1.3.0"
+version = "2.0.0"
 summary = "A collection of Plotly figure templates with a Bootstrap theme"
 groups = ["default"]
 dependencies = [
@@ -395,10 +395,11 @@ dependencies = [
     "importlib-metadata>=3.4.0; python_version == \"3.7\"",
     "importlib-resources>=5.1.0; python_version < \"3.9\"",
     "numpy",
+    "plotly<7,>=6",
 ]
 files = [
-    {file = "dash_bootstrap_templates-1.3.0-py3-none-any.whl", hash = "sha256:bb49a57d4a4331d0e610c87fcfb3fcbab4d015b5361f2fa58dce0bf1213ffc7c"},
-    {file = "dash_bootstrap_templates-1.3.0.tar.gz", hash = "sha256:a704e71b45bb9443e6ba7851ceef33d220b6decac5c344fff41b52d928470877"},
+    {file = "dash_bootstrap_templates-2.0.0-py3-none-any.whl", hash = "sha256:f81e339f92176b865f16580726f9654b3722cf7afb1144e8ea03601345b9da47"},
+    {file = "dash_bootstrap_templates-2.0.0.tar.gz", hash = "sha256:9d58636e80741614024f7ce2c5560c452fe67b0f971fbe0ef2db049f27d4f9f0"},
 ]
 
 [[package]]
@@ -1010,6 +1011,17 @@ files = [
 ]
 
 [[package]]
+name = "narwhals"
+version = "1.25.2"
+requires_python = ">=3.8"
+summary = "Extremely lightweight compatibility layer between dataframe libraries"
+groups = ["default"]
+files = [
+    {file = "narwhals-1.25.2-py3-none-any.whl", hash = "sha256:e645f7fc1f8c0a3563a6cdcd0191586cdf88470ad90f0818abba7ceb6c181b00"},
+    {file = "narwhals-1.25.2.tar.gz", hash = "sha256:37594746fc06fe4a588967a34a2974b1f3a7ad6ff1571b6e31ac5e58c9591000"},
+]
+
+[[package]]
 name = "nest-asyncio"
 version = "1.6.0"
 requires_python = ">=3.5"
@@ -1221,17 +1233,17 @@ files = [
 
 [[package]]
 name = "plotly"
-version = "5.22.0"
+version = "6.0.0"
 requires_python = ">=3.8"
 summary = "An open-source, interactive data visualization library for Python"
 groups = ["default"]
 dependencies = [
+    "narwhals>=1.15.1",
     "packaging",
-    "tenacity>=6.2.0",
 ]
 files = [
-    {file = "plotly-5.22.0-py3-none-any.whl", hash = "sha256:68fc1901f098daeb233cc3dd44ec9dc31fb3ca4f4e53189344199c43496ed006"},
-    {file = "plotly-5.22.0.tar.gz", hash = "sha256:859fdadbd86b5770ae2466e542b761b247d1c6b49daed765b95bb8c7063e7469"},
+    {file = "plotly-6.0.0-py3-none-any.whl", hash = "sha256:f708871c3a9349a68791ff943a5781b1ec04de7769ea69068adcd9202e57653a"},
+    {file = "plotly-6.0.0.tar.gz", hash = "sha256:c4aad38b8c3d65e4a5e7dd308b084143b9025c2cc9d5317fc1f1d30958db87d3"},
 ]
 
 [[package]]
@@ -1441,17 +1453,6 @@ dependencies = [
 files = [
     {file = "stanio-0.5.1-py3-none-any.whl", hash = "sha256:99ad590daa5834681245c2b651716ec2e06223853661ada21430c621521c849f"},
     {file = "stanio-0.5.1.tar.gz", hash = "sha256:348d52f947dec431e118f4b601c4c5296929b86401d4d4dd5aa9373b0d4ae4ac"},
-]
-
-[[package]]
-name = "tenacity"
-version = "8.5.0"
-requires_python = ">=3.8"
-summary = "Retry code until it succeeds"
-groups = ["default"]
-files = [
-    {file = "tenacity-8.5.0-py3-none-any.whl", hash = "sha256:b594c2a5945830c267ce6b79a166228323ed52718f30302c1359836112346687"},
-    {file = "tenacity-8.5.0.tar.gz", hash = "sha256:8bc6c0c8a09b31e6cad13c47afbed1a567518250a9a171418582ed8d9c20ca78"},
 ]
 
 [[package]]
